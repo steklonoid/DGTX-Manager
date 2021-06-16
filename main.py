@@ -6,7 +6,7 @@ import queue
 import logging
 
 from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QStandardItemModel
 from PyQt5.QtCore import QSettings, pyqtSlot, Qt
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 from mainWindow import UiMainWindow
@@ -48,38 +48,22 @@ class MainWindow(QMainWindow, UiMainWindow):
 
     def __init__(self):
 
-        def createdb(fname):
-            self.db.setDatabaseName(fname)
-            self.db.open()
-            q1 = QSqlQuery(self.db)
-            q1.prepare("CREATE TABLE users (login TEXT UNIQUE PRIMARY KEY, psw TEXT NOT NULL, apikey TEXT NOT NULL)")
-            q1.exec_()
-
-        def opendb():
-            fname = "./conf.db"
-            if not os.path.exists(fname):
-                createdb(fname)
-
-            self.db.setDatabaseName(fname)
-            self.db.open()
-            if self.db.isOpen():
-                return True
-            else:
-                return False
-
         super().__init__()
         logging.basicConfig(filename='info.log', level=logging.INFO, format='%(asctime)s %(message)s')
-        #  подключаем базу SQLite
-        # self.db = QSqlDatabase.addDatabase("QSQLITE", 'maindb')
-        # if not opendb():
-        #     msg_box = QMessageBox()
-        #     msg_box.setText("Ошибка открытия файла базы данных")
-        #     msg_box.exec()
-        #     sys.exit()
 
         # создание визуальной формы
         self.setupui(self)
         self.show()
+
+        self.m_pilots = QStandardItemModel()
+        self.m_pilots.setColumnCount(2)
+        self.m_pilots.setHorizontalHeaderLabels(['Имя', 'Статус'])
+        self.t_pilots.setModel(self.m_pilots)
+
+        self.m_rockets = QStandardItemModel()
+        self.m_rockets.setColumnCount(3)
+        self.m_rockets.setHorizontalHeaderLabels(['ID', 'Модель', 'Статус'])
+        self.t_rockets.setModel(self.m_rockets)
 
         self.wssserver = WSSClient()
         self.wssserver.daemon = True
@@ -125,8 +109,12 @@ class MainWindow(QMainWindow, UiMainWindow):
 
     @pyqtSlot()
     def button1_clicked(self):
-        datadict = {'manager_command':'getlistrockets'}
-        self.wssserver.senddata(datadict)
+        str = {'id': 3, 'message_type': 'manager_command', 'params': {'command': 'getlistrockets'}}
+        self.wssserver.senddata(str)
+        str = {'id': 3, 'message_type': 'manager_command', 'params': {'command': 'getlistpilots'}}
+        self.wssserver.senddata(str)
+        str = {'id': 3, 'message_type': 'manager_command', 'params': {'command': 'getlistmanagers'}}
+        self.wssserver.senddata(str)
 
     def midvol(self):
         # self.lock.acquire()

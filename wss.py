@@ -8,12 +8,13 @@ import logging
 class WSSClient(Thread):
     def __init__(self):
         super(WSSClient, self).__init__()
+        self.flClosing = False
 
     def run(self) -> None:
         def on_open(wsapp):
             print('open')
-            datadict = {'registration':'manager'}
-            self.senddata(datadict)
+            str = {'id':2, 'message_type':'registration', 'params':{'typereg':'manager'}}
+            self.senddata(str)
 
         def on_close(wsapp, close_status_code, close_msg):
             print('close')
@@ -22,15 +23,23 @@ class WSSClient(Thread):
             print('error')
 
         def on_message(wssapp, message):
+            message = json.loads(message)
             print(message)
 
-        self.wsapp = websocket.WebSocketApp("ws://localhost:6789", on_open=on_open,
-                                                       on_close=on_close, on_error=on_error, on_message=on_message)
-        self.wsapp.run_forever()
+        while not self.flClosing:
+            try:
+                self.wsapp = websocket.WebSocketApp("ws://localhost:6789", on_open=on_open,
+                                                               on_close=on_close, on_error=on_error, on_message=on_message)
+                self.wsapp.run_forever()
+            except:
+                pass
+            finally:
+                time.sleep(1)
 
     def senddata(self, data):
         data = json.dumps(data)
         self.wsapp.send(data)
+
 
 class WSThread(Thread):
     def __init__(self, pc):
@@ -75,7 +84,8 @@ class WSThread(Thread):
                 self.pc.statusbar.showMessage('Восстановление соединения с сервером')
             except:
                 pass
-            time.sleep(1)
+            finally:
+                time.sleep(1)
 
     def changeEx(self, name):
         self.send_public('subscribe', name + '@index', name + '@orderbook_1')

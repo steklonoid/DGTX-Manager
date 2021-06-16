@@ -14,6 +14,8 @@ class UiMainWindow(object):
         mainwindow.setObjectName("MainWindow")
         mainwindow.setWindowTitle("DLM Center v1.0.1")
         mainwindow.setWindowIcon(QIcon("./images/main_icon.png"))
+        mainwindow.resize(800, 400)
+
         self.centralwidget = QWidget(mainwindow)
         self.centralwidget.setObjectName("centralwidget")
         mainwindow.setCentralWidget(self.centralwidget)
@@ -22,14 +24,14 @@ class UiMainWindow(object):
         self.gridLayout.setContentsMargins(1, 1, 1, 1)
         self.gridLayout.setObjectName("gridLayout")
 
-        self.pilots = QTableView()
-        self.gridLayout.addWidget(self.pilots, 0, 0, 1, 1)
+        self.t_pilots = QTableView()
+        self.gridLayout.addWidget(self.t_pilots, 0, 0, 1, 1)
 
-        self.rockets = QTableView()
-        self.gridLayout.addWidget(self.rockets, 0, 1, 1, 1)
+        self.t_rockets = QTableView()
+        self.gridLayout.addWidget(self.t_rockets, 0, 1, 1, 1)
 
-        self.races = QTableView()
-        self.gridLayout.addWidget(self.races, 1, 0, 1, 2)
+        self.t_races = QTableView()
+        self.gridLayout.addWidget(self.t_races, 1, 0, 1, 2)
 
         self.button1 = QPushButton()
         self.button1.setText('Get rockets list')
