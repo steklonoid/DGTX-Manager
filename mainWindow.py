@@ -1,6 +1,6 @@
 # модуль главного окна
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QGridLayout, QStatusBar, QPushButton, QLabel, QTableView
+from PyQt5.QtWidgets import QWidget, QGridLayout, QStatusBar, QPushButton, QLabel, QTableView, QHBoxLayout
 from PyQt5.QtGui import QIcon
 
 
@@ -12,7 +12,7 @@ class UiMainWindow(object):
     def setupui(self, mainwindow):
         mainwindow.setObjectName("MainWindow")
         mainwindow.setWindowTitle("DLM Center v1.0.1")
-        mainwindow.resize(800, 400)
+        # mainwindow.resize(800, 400)
 
         self.centralwidget = QWidget(mainwindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -34,16 +34,52 @@ class UiMainWindow(object):
         self.t_rockets = QTableView()
         self.gridLayout.addWidget(self.t_rockets, 1, 1, 1, 1)
 
+        l_managers = QLabel('Менеждеры')
+        l_managers.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        self.gridLayout.addWidget(l_managers, 0, 2, 1, 1)
+        self.t_managers = QTableView()
+        self.gridLayout.addWidget(self.t_managers, 1, 2, 1, 1)
+
         l_races = QLabel('Полеты')
         l_races.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        self.gridLayout.addWidget(l_races, 2, 0, 1, 2)
+        self.gridLayout.addWidget(l_races, 2, 0, 1, 3)
         self.t_races = QTableView()
-        self.gridLayout.addWidget(self.t_races, 3, 0, 1, 2)
+        self.gridLayout.addWidget(self.t_races, 3, 0, 1, 3)
 
-        self.button1 = QPushButton()
-        self.button1.setText('Get rockets list')
-        self.button1.clicked.connect(self.button1_clicked)
-        self.gridLayout.addWidget(self.button1, 4, 0, 1, 2)
+        hb_cp1_w = QWidget()
+        hb_cp1 = QHBoxLayout()
+        hb_cp1_w.setLayout(hb_cp1)
+        pb1_cp1 = QPushButton()
+        pb1_cp1.setText('Старт')
+        hb_cp1.addWidget(pb1_cp1)
+        pb2_cp1 = QPushButton()
+        pb2_cp1.setText('Стоп')
+        hb_cp1.addWidget(pb2_cp1)
+        self.gridLayout.addWidget(hb_cp1_w, 4, 0, 1, 3)
+
+        self.pb_enter = QPushButton()
+        self.pb_enter.setText('вход не выполнен')
+        self.pb_enter.setStyleSheet("color:rgb(255, 96, 96); font: bold 12px;border: none")
+        self.pb_enter.setCursor(Qt.PointingHandCursor)
+        self.gridLayout.addWidget(self.pb_enter, 0, 3, 1, 1)
+        self.pb_enter.clicked.connect(self.buttonLogin_clicked)
+
+        self.t_config = QTableView()
+        self.gridLayout.addWidget(self.t_config, 1, 3, 1, 1)
+
+        hb_cp2_w = QWidget()
+        hb_cp2 = QHBoxLayout()
+        hb_cp2_w.setLayout(hb_cp2)
+        pb1_cp2 = QPushButton()
+        pb1_cp2.setText('Вниз')
+        hb_cp2.addWidget(pb1_cp2)
+        pb2_cp2 = QPushButton()
+        pb2_cp2.setText('Вверх')
+        hb_cp2.addWidget(pb2_cp2)
+        self.gridLayout.addWidget(hb_cp2_w, 2, 3, 1, 1)
+
+        self.t_param = QTableView()
+        self.gridLayout.addWidget(self.t_param, 3, 3, 2, 1)
 
 
         self.statusbar = QStatusBar(mainwindow)

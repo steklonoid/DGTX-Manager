@@ -10,6 +10,7 @@ from PyQt5.QtGui import QIcon, QStandardItemModel, QStandardItem
 from PyQt5.QtCore import QSettings, pyqtSlot, Qt
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 from mainWindow import UiMainWindow
+from loginWindow import LoginWindow
 from wss import Worker, WSSClient
 import hashlib
 from Crypto.Cipher import AES # pip install pycryptodome
@@ -47,23 +48,31 @@ class MainWindow(QMainWindow, UiMainWindow):
         self.wssclient.daemon = True
         self.wssclient.start()
 
-
+        self.user = ''
 
     def closeEvent(self, *args, **kwargs):
         pass
-        # self.wssclient.flClosing = True
-        # self.wssclient.wsapp.close()
-        # while self.wssclient.is_alive():
-        #     pass
+
+    def userlogined(self, user, psw):
+        if self.wssclient.flConnect and not self.wssclient.flAuth:
+            self.user = user
+            str = {'id':1, 'message_type':'registration', 'data':{'typereg':'manager', 'user':user, 'psw':psw}}
+            self.wssclient.senddata(str)
+
+    def change_auth_status(self):
+        if self.wssclient.flAuth:
+            self.pb_enter.setText('вход выполнен: ' + self.user)
+            self.pb_enter.setStyleSheet("color:rgb(64, 192, 64); font: bold 12px;border: none")
+        else:
+            self.pb_enter.setText('вход не выполнен')
+            self.pb_enter.setStyleSheet("color:rgb(255, 96, 96); font: bold 12px;border: none")
 
     @pyqtSlot()
-    def button1_clicked(self):
-        str = {'id': 3, 'message_type': 'manager_command', 'params': {'command': 'getrocketslist'}}
-        self.wssclient.senddata(str)
-        str = {'id': 3, 'message_type': 'manager_command', 'params': {'command': 'getpilotslist'}}
-        self.wssclient.senddata(str)
-        str = {'id': 3, 'message_type': 'manager_command', 'params': {'command': 'getraceslist'}}
-        self.wssclient.senddata(str)
+    def buttonLogin_clicked(self):
+        rw = LoginWindow()
+        rw.userlogined.connect(lambda: self.userlogined(rw.user, rw.psw))
+        rw.setupUi()
+        rw.exec_()
 
     def getrocketslist(self, data):
         self.m_rockets.removeRows(0, self.m_rockets.rowCount())
