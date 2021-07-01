@@ -1,6 +1,6 @@
 # модуль главного окна
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QGridLayout, QStatusBar, QPushButton, QLabel, QTableView, QHBoxLayout
+from PyQt5.QtWidgets import QWidget, QGridLayout, QStatusBar, QPushButton, QLabel, QTableView, QHBoxLayout, QAbstractItemView
 from PyQt5.QtGui import QIcon
 
 
@@ -11,7 +11,7 @@ class UiMainWindow(object):
 
     def setupui(self, mainwindow):
         mainwindow.setObjectName("MainWindow")
-        mainwindow.setWindowTitle("DLM Center v1.0.1")
+        mainwindow.setWindowTitle('DLM Center v' + mainwindow.version)
         # mainwindow.resize(800, 400)
 
         self.centralwidget = QWidget(mainwindow)
@@ -26,24 +26,29 @@ class UiMainWindow(object):
         l_pilots.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         self.gridLayout.addWidget(l_pilots, 0, 0, 1, 1)
         self.t_pilots = QTableView()
+        self.t_pilots.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.t_pilots.doubleClicked.connect(self.t_pilots_doubleClicked)
         self.gridLayout.addWidget(self.t_pilots, 1, 0, 1, 1)
 
         l_rockets = QLabel('Ракеты')
         l_rockets.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         self.gridLayout.addWidget(l_rockets, 0, 1, 1, 1)
         self.t_rockets = QTableView()
+        self.t_rockets.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.gridLayout.addWidget(self.t_rockets, 1, 1, 1, 1)
 
         l_managers = QLabel('Менеждеры')
         l_managers.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         self.gridLayout.addWidget(l_managers, 0, 2, 1, 1)
         self.t_managers = QTableView()
+        self.t_managers.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.gridLayout.addWidget(self.t_managers, 1, 2, 1, 1)
 
         l_races = QLabel('Полеты')
         l_races.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         self.gridLayout.addWidget(l_races, 2, 0, 1, 3)
         self.t_races = QTableView()
+        self.t_races.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.gridLayout.addWidget(self.t_races, 3, 0, 1, 3)
 
         hb_cp1_w = QWidget()

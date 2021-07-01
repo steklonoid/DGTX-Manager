@@ -45,6 +45,19 @@ class WSSClient(Thread):
                 else:
                     self.flAuth = False
                 self.pc.change_auth_status()
+            elif message_type == 'cm':
+                command = data.get('command')
+                if command == 'getrockets':
+                    rockets_data = data.get('rockets')
+                    self.pc.cm_getrockets(rockets_data)
+                elif command == 'getmanagers':
+                    managers_data = data.get('managers')
+                    self.pc.cm_getmanagers(managers_data)
+                elif command == 'getpilots':
+                    pilots_data = data.get('pilots')
+                    self.pc.cm_getpilots(pilots_data)
+                else:
+                    pass
             else:
                 pass
 
