@@ -4,9 +4,9 @@ import json
 import time
 
 
-class WSSClient(Thread):
+class WSSCore(Thread):
     def __init__(self, pc):
-        super(WSSClient, self).__init__()
+        super(WSSCore, self).__init__()
         self.flClosing = False
         self.pc = pc
         self.flConnect = False
@@ -74,6 +74,7 @@ class WSSClient(Thread):
 
     def senddata(self, data):
         data = json.dumps(data)
+        print(data)
         self.wsapp.send(data)
 
 
