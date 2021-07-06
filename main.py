@@ -11,7 +11,7 @@ from PyQt5.QtCore import QSettings, pyqtSlot, Qt
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 from mainWindow import UiMainWindow
 from loginWindow import LoginWindow
-from wss import Worker, WSSClient
+from wss import Worker, WSSCore
 import hashlib
 from Crypto.Cipher import AES # pip install pycryptodome
 import math
@@ -26,7 +26,8 @@ class MainWindow(QMainWindow, UiMainWindow):
 
     flConnect = False           #   флаг нормального соединения с сайтом
     pilotscodes = {0:'На базе', 1:'Вылет разрешен', 2:'В полете'}
-    rocketscodes = {0: 'Готова к вылету', 1: 'В полете'}
+    rocketscodes = {0: 'Готова к вылету', 1:'С пилотом', 2: 'В полете'}
+    racescodes = {0:'Ожидание', 1:'Полет'}
 
 
     def __init__(self):
@@ -55,12 +56,12 @@ class MainWindow(QMainWindow, UiMainWindow):
 
         self.m_races = QStandardItemModel()
         self.m_races.setColumnCount(3)
-        self.m_races.setHorizontalHeaderLabels(['Пилот', 'Ракета', 'Статус'])
+        self.m_races.setHorizontalHeaderLabels(['Ракета', 'Пилот', 'Статус'])
         self.t_races.setModel(self.m_races)
 
-        self.wssclient = WSSClient(self)
-        self.wssclient.daemon = True
-        self.wssclient.start()
+        self.wsscore = WSSCore(self)
+        self.wsscore.daemon = True
+        self.wsscore.start()
 
         self.user = ''
 
@@ -68,29 +69,18 @@ class MainWindow(QMainWindow, UiMainWindow):
         pass
 
     def userlogined(self, user, psw):
-        if self.wssclient.flConnect and not self.wssclient.flAuth:
+        if self.wsscore.flConnect and not self.wsscore.flAuth:
             self.user = user
-            str = {'id':1, 'message_type':'registration', 'data':{'typereg':'manager', 'user':user, 'psw':psw}}
-            self.wssclient.senddata(str)
+            self.wsscore.send_registration(user, psw)
 
     def change_auth_status(self):
-        if self.wssclient.flAuth:
+        if self.wsscore.flAuth:
             self.pb_enter.setText('вход выполнен: ' + self.user)
             self.pb_enter.setStyleSheet("color:rgb(64, 192, 64); font: bold 12px;border: none")
-            self.getinfo()
+            self.wsscore.getinfo()
         else:
             self.pb_enter.setText('вход не выполнен')
             self.pb_enter.setStyleSheet("color:rgb(255, 96, 96); font: bold 12px;border: none")
-
-    def getinfo(self):
-        str = {'id':2, 'message_type':'mc', 'data':{'command':'getrockets'}}
-        self.wssclient.senddata(str)
-        str = {'id': 3, 'message_type': 'mc', 'data': {'command': 'getpilots'}}
-        self.wssclient.senddata(str)
-        str = {'id': 4, 'message_type': 'mc', 'data': {'command': 'getmanagers'}}
-        self.wssclient.senddata(str)
-        # str = {'id': 5, 'message_type': 'mc', 'data': {'command': 'getraces'}}
-        # self.wssclient.senddata(str)
 
     @pyqtSlot()
     def t_pilots_doubleClicked(self):
@@ -109,9 +99,7 @@ class MainWindow(QMainWindow, UiMainWindow):
                     flFreeRocket = True
                     break
             if flFreeRocket:
-                str = {'id': 5, 'message_type': 'mc', 'data': {'command': 'authpilot', 'pilot':name, 'rocket':rocket_id}}
-                print(str)
-                self.wssclient.senddata(str)
+                self.wsscore.authpilot(name, rocket_id)
             else:
                 print('Нет свободных ракет')
 
@@ -152,10 +140,17 @@ class MainWindow(QMainWindow, UiMainWindow):
             self.m_pilots.item(rownum, 2).setData(self.pilotscodes[v['status']], Qt.DisplayRole)
             rownum += 1
 
+    def cm_getraces(self, races_data):
+        self.m_races.removeRows(0, self.m_races.rowCount())
+        rownum = 0
+        for k,v in races_data.items():
+            self.m_races.appendRow([QStandardItem(), QStandardItem(), QStandardItem()])
+            self.m_races.item(rownum, 0).setData(k, Qt.DisplayRole)
+            self.m_races.item(rownum, 1).setData(v['pilot'], Qt.DisplayRole)
+            self.m_races.item(rownum, 2).setData(v['status'], 3)
+            self.m_races.item(rownum, 2).setData(self.racescodes[v['status']], Qt.DisplayRole)
+            rownum += 1
 
-
-    def getraces(self, data):
-        pass
 
 app = QApplication([])
 win = MainWindow()

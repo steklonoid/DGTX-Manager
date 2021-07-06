@@ -4,9 +4,9 @@ import json
 import time
 
 
-class WSSClient(Thread):
+class WSSCore(Thread):
     def __init__(self, pc):
-        super(WSSClient, self).__init__()
+        super(WSSCore, self).__init__()
         self.flClosing = False
         self.pc = pc
         self.flConnect = False
@@ -56,6 +56,9 @@ class WSSClient(Thread):
                 elif command == 'getpilots':
                     pilots_data = data.get('pilots')
                     self.pc.cm_getpilots(pilots_data)
+                elif command == 'getraces':
+                    races_data = data.get('races')
+                    self.pc.cm_getraces(races_data)
                 else:
                     pass
             else:
@@ -72,9 +75,30 @@ class WSSClient(Thread):
             finally:
                 time.sleep(1)
 
-    def senddata(self, data):
-        data = json.dumps(data)
-        self.wsapp.send(data)
+    def authpilot(self, name, rocket_id):
+        data = {'command': 'authpilot', 'pilot': name, 'rocket': rocket_id}
+        self.send_mc(data)
+
+    def getinfo(self):
+        print('!')
+        data = {'command': 'getrockets'}
+        self.send_mc(data)
+        data = {'command': 'getpilots'}
+        self.send_mc(data)
+        data = {'command': 'getmanagers'}
+        self.send_mc(data)
+        data = {'command': 'getraces'}
+        self.send_mc(data)
+
+    def send_registration(self, user, psw):
+        str = {'id': 1, 'message_type': 'registration', 'data': {'typereg': 'manager', 'user': user, 'psw': psw}}
+        str = json.dumps(str)
+        self.wsapp.send(str)
+
+    def send_mc(self, data):
+        str = {'id':10, 'message_type':'mc', 'data':data}
+        str = json.dumps(str)
+        self.wsapp.send(str)
 
 
 class Worker(Thread):
