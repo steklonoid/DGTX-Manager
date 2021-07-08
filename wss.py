@@ -80,7 +80,6 @@ class WSSCore(Thread):
         self.send_mc(data)
 
     def getinfo(self):
-        print('!')
         data = {'command': 'getrockets'}
         self.send_mc(data)
         data = {'command': 'getpilots'}

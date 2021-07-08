@@ -1,6 +1,6 @@
 # модуль главного окна
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QGridLayout, QStatusBar, QPushButton, QLabel, QTableView, QHBoxLayout, QAbstractItemView
+from PyQt5.QtWidgets import QWidget, QGridLayout, QStatusBar, QPushButton, QLabel, QTableView, QHBoxLayout, QAbstractItemView, QTableWidget
 from PyQt5.QtGui import QIcon
 
 
@@ -49,6 +49,7 @@ class UiMainWindow(object):
         self.gridLayout.addWidget(l_races, 2, 0, 1, 3)
         self.t_races = QTableView()
         self.t_races.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.t_races.clicked.connect(self.t_races_clicked)
         self.gridLayout.addWidget(self.t_races, 3, 0, 1, 3)
 
         hb_cp1_w = QWidget()

@@ -5,7 +5,7 @@ import time
 import queue
 import logging
 
-from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox
+from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox, QTableWidgetItem, QPushButton
 from PyQt5.QtGui import QIcon, QStandardItemModel, QStandardItem
 from PyQt5.QtCore import QSettings, pyqtSlot, Qt
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
@@ -59,6 +59,11 @@ class MainWindow(QMainWindow, UiMainWindow):
         self.m_races.setHorizontalHeaderLabels(['Ракета', 'Пилот', 'Статус'])
         self.t_races.setModel(self.m_races)
 
+        self.m_param = QStandardItemModel()
+        self.m_param.setColumnCount(2)
+        self.m_param.setHorizontalHeaderLabels(['Параметр', 'Значение'])
+        self.t_param.setModel(self.m_param)
+
         self.wsscore = WSSCore(self)
         self.wsscore.daemon = True
         self.wsscore.start()
@@ -104,6 +109,21 @@ class MainWindow(QMainWindow, UiMainWindow):
                 print('Нет свободных ракет')
 
     @pyqtSlot()
+    def t_races_clicked(self):
+        self.m_param.removeRows(0, self.m_param.rowCount())
+        index = self.t_races.selectedIndexes()[0].siblingAtColumn(0)
+        rocket_id = self.m_races.itemData(index)[Qt.DisplayRole]
+        parameters = self.races_data[rocket_id]['parameters']
+        rownum = 0
+        for k,v in parameters.items():
+            self.m_param.appendRow([QStandardItem(), QStandardItem()])
+            self.m_param.item(rownum, 0).setData(k, Qt.DisplayRole)
+            self.m_param.item(rownum, 1).setData(v, Qt.DisplayRole)
+            rownum += 1
+
+
+
+    @pyqtSlot()
     def buttonLogin_clicked(self):
         rw = LoginWindow()
         rw.userlogined.connect(lambda: self.userlogined(rw.user, rw.psw))
@@ -141,9 +161,10 @@ class MainWindow(QMainWindow, UiMainWindow):
             rownum += 1
 
     def cm_getraces(self, races_data):
+        self.races_data = dict(races_data)
         self.m_races.removeRows(0, self.m_races.rowCount())
         rownum = 0
-        for k,v in races_data.items():
+        for k,v in self.races_data.items():
             self.m_races.appendRow([QStandardItem(), QStandardItem(), QStandardItem()])
             self.m_races.item(rownum, 0).setData(k, Qt.DisplayRole)
             self.m_races.item(rownum, 1).setData(v['pilot'], Qt.DisplayRole)
