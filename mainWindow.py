@@ -46,11 +46,11 @@ class UiMainWindow(object):
 
         l_races = QLabel('Полеты')
         l_races.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        self.gridLayout.addWidget(l_races, 2, 0, 1, 3)
+        self.gridLayout.addWidget(l_races, 2, 0, 1, 2)
         self.t_races = QTableView()
         self.t_races.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.t_races.clicked.connect(self.t_races_clicked)
-        self.gridLayout.addWidget(self.t_races, 3, 0, 1, 3)
+        self.gridLayout.addWidget(self.t_races, 3, 0, 1, 2)
 
         hb_cp1_w = QWidget()
         hb_cp1 = QHBoxLayout()
@@ -61,7 +61,7 @@ class UiMainWindow(object):
         pb2_cp1 = QPushButton()
         pb2_cp1.setText('Стоп')
         hb_cp1.addWidget(pb2_cp1)
-        self.gridLayout.addWidget(hb_cp1_w, 4, 0, 1, 3)
+        self.gridLayout.addWidget(hb_cp1_w, 4, 0, 1, 2)
 
         self.pb_enter = QPushButton()
         self.pb_enter.setText('вход не выполнен')
@@ -85,7 +85,10 @@ class UiMainWindow(object):
         self.gridLayout.addWidget(hb_cp2_w, 2, 3, 1, 1)
 
         self.t_param = QTableView()
-        self.gridLayout.addWidget(self.t_param, 3, 3, 2, 1)
+        self.gridLayout.addWidget(self.t_param, 3, 2, 2, 1)
+
+        self.t_templates = QTableView()
+        self.gridLayout.addWidget(self.t_templates, 3, 3, 2, 1)
 
 
         self.statusbar = QStatusBar(mainwindow)

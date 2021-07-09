@@ -6,7 +6,7 @@ import queue
 import logging
 
 from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox, QTableWidgetItem, QPushButton
-from PyQt5.QtGui import QIcon, QStandardItemModel, QStandardItem
+from PyQt5.QtGui import QIcon, QStandardItemModel, QStandardItem, QColor
 from PyQt5.QtCore import QSettings, pyqtSlot, Qt
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 from mainWindow import UiMainWindow
@@ -20,7 +20,7 @@ from threading import Lock
 
 
 class MainWindow(QMainWindow, UiMainWindow):
-    version = '1.0.2'
+    version = '1.0.5'
     settings = QSettings("./config.ini", QSettings.IniFormat)   # файл настроек
     lock = Lock()
 
@@ -43,6 +43,7 @@ class MainWindow(QMainWindow, UiMainWindow):
         self.m_pilots.setColumnCount(3)
         self.m_pilots.setHorizontalHeaderLabels(['ID', 'Имя', 'Статус'])
         self.t_pilots.setModel(self.m_pilots)
+        self.t_pilots.setColumnHidden(0, True)
 
         self.m_rockets = QStandardItemModel()
         self.m_rockets.setColumnCount(3)
@@ -121,8 +122,6 @@ class MainWindow(QMainWindow, UiMainWindow):
             self.m_param.item(rownum, 1).setData(v, Qt.DisplayRole)
             rownum += 1
 
-
-
     @pyqtSlot()
     def buttonLogin_clicked(self):
         rw = LoginWindow()
@@ -137,8 +136,10 @@ class MainWindow(QMainWindow, UiMainWindow):
             self.m_rockets.appendRow([QStandardItem(), QStandardItem(), QStandardItem()])
             self.m_rockets.item(rownum, 0).setData(k, Qt.DisplayRole)
             self.m_rockets.item(rownum, 1).setData(v['version'], Qt.DisplayRole)
-            self.m_rockets.item(rownum, 2).setData(v['status'], 3)
-            self.m_rockets.item(rownum, 2).setData(self.rocketscodes[v['status']], Qt.DisplayRole)
+            status = v['status']
+            self.m_rockets.item(rownum, 2).setData(status, 3)
+            self.m_rockets.item(rownum, 2).setData(self.rocketscodes[status], Qt.DisplayRole)
+            self.m_rockets.item(rownum, 2).setData(QColor(200 - 15 * status, 200 + 15 * status, 255), Qt.BackgroundColorRole)
             rownum += 1
 
     def cm_getmanagers(self, managers_data):
@@ -156,8 +157,10 @@ class MainWindow(QMainWindow, UiMainWindow):
             self.m_pilots.appendRow([QStandardItem(), QStandardItem(), QStandardItem()])
             self.m_pilots.item(rownum, 0).setData(k, Qt.DisplayRole)
             self.m_pilots.item(rownum, 1).setData(v['name'], Qt.DisplayRole)
-            self.m_pilots.item(rownum, 2).setData(v['status'], 3)
-            self.m_pilots.item(rownum, 2).setData(self.pilotscodes[v['status']], Qt.DisplayRole)
+            status = v['status']
+            self.m_pilots.item(rownum, 2).setData(status, 3)
+            self.m_pilots.item(rownum, 2).setData(self.pilotscodes[status], Qt.DisplayRole)
+            self.m_pilots.item(rownum, 2).setData(QColor(200 - 15 * status, 200 + 15 * status, 255), Qt.BackgroundColorRole)
             rownum += 1
 
     def cm_getraces(self, races_data):

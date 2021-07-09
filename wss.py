@@ -89,6 +89,9 @@ class WSSCore(Thread):
         data = {'command': 'getraces'}
         self.send_mc(data)
 
+    def setparameters(self):
+        data = {'command': 'setparameters', }
+
     def send_registration(self, user, psw):
         str = {'id': 1, 'message_type': 'registration', 'data': {'typereg': 'manager', 'user': user, 'psw': psw}}
         str = json.dumps(str)
