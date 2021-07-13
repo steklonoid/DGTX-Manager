@@ -40,25 +40,18 @@ class MainWindow(QMainWindow, UiMainWindow):
         self.show()
 
         self.m_pilots = QStandardItemModel()
-        self.m_pilots.setColumnCount(3)
-        self.m_pilots.setHorizontalHeaderLabels(['ID', 'Имя', 'Статус'])
+        self.m_pilots.setColumnCount(4)
+        self.m_pilots.setHorizontalHeaderLabels(['ID', 'Имя', 'Статус', 'Баланс'])
         self.t_pilots.setModel(self.m_pilots)
         self.t_pilots.setColumnHidden(0, True)
 
         self.m_rockets = QStandardItemModel()
-        self.m_rockets.setColumnCount(3)
-        self.m_rockets.setHorizontalHeaderLabels(['ID', 'Модель', 'Статус'])
+        self.m_rockets.setColumnCount(9)
+        self.m_rockets.setHorizontalHeaderLabels(['ID', 'Модель', 'Пилот', 'Статус', 'Время в полете', 'Добыто ЛМ', 'Выплат', 'Добыто рынок', 'Ордеров'])
         self.t_rockets.setModel(self.m_rockets)
 
         self.m_managers = QStandardItemModel()
-        self.m_managers.setColumnCount(1)
-        self.m_managers.setHorizontalHeaderLabels(['Имя'])
-        self.t_managers.setModel(self.m_managers)
-
-        self.m_races = QStandardItemModel()
-        self.m_races.setColumnCount(3)
-        self.m_races.setHorizontalHeaderLabels(['Ракета', 'Пилот', 'Статус'])
-        self.t_races.setModel(self.m_races)
+        self.lt_managers.setModel(self.m_managers)
 
         self.m_param = QStandardItemModel()
         self.m_param.setColumnCount(2)

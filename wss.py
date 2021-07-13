@@ -56,9 +56,6 @@ class WSSCore(Thread):
                 elif command == 'getpilots':
                     pilots_data = data.get('pilots')
                     self.pc.cm_getpilots(pilots_data)
-                elif command == 'getraces':
-                    races_data = data.get('races')
-                    self.pc.cm_getraces(races_data)
                 else:
                     pass
             else:
