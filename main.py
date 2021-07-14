@@ -27,7 +27,6 @@ class MainWindow(QMainWindow, UiMainWindow):
     flConnect = False           #   флаг нормального соединения с сайтом
     pilotscodes = {0:'На базе', 1:'Вылет разрешен', 2:'В полете'}
     rocketscodes = {0: 'Готова к вылету', 1:'С пилотом', 2: 'В полете'}
-    racescodes = {0:'Ожидание', 1:'Полет'}
 
 
     def __init__(self):
@@ -143,18 +142,24 @@ class MainWindow(QMainWindow, UiMainWindow):
             self.m_managers.item(rownum, 0).setData(manager, Qt.DisplayRole)
             rownum += 1
 
-    def cm_getpilots(self, pilots_data):
-        self.m_pilots.removeRows(0, self.m_pilots.rowCount())
-        rownum = 0
-        for k,v in pilots_data.items():
-            self.m_pilots.appendRow([QStandardItem(), QStandardItem(), QStandardItem()])
-            self.m_pilots.item(rownum, 0).setData(k, Qt.DisplayRole)
-            self.m_pilots.item(rownum, 1).setData(v['name'], Qt.DisplayRole)
+    def cm_getpilot(self, pilot_data):
+        # self.m_pilots.removeRows(0, self.m_pilots.rowCount())
+
+        for k,v in pilot_data.items():
+            item = self.m_pilots.findItems(k, flags=Qt.MatchExactly, column=0)
+            if not item:
+                rownum = self.m_pilots.rowCount()
+                self.m_pilots.appendRow([QStandardItem(), QStandardItem(), QStandardItem(), QStandardItem()])
+                self.m_pilots.item(rownum, 0).setData(k, Qt.DisplayRole)
+                self.m_pilots.item(rownum, 1).setData(v['name'], Qt.DisplayRole)
+            else:
+                rownum = item[0].row()
+
             status = v['status']
             self.m_pilots.item(rownum, 2).setData(status, 3)
             self.m_pilots.item(rownum, 2).setData(self.pilotscodes[status], Qt.DisplayRole)
             self.m_pilots.item(rownum, 2).setData(QColor(200 - 15 * status, 200 + 15 * status, 255), Qt.BackgroundColorRole)
-            rownum += 1
+            self.m_pilots.item(rownum, 3).setData(v['balance'], Qt.DisplayRole)
 
     def cm_getraces(self, races_data):
         self.races_data = dict(races_data)
