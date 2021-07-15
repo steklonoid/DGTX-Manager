@@ -25,7 +25,7 @@ class MainWindow(QMainWindow, UiMainWindow):
     lock = Lock()
 
     flConnect = False           #   флаг нормального соединения с сайтом
-    pilotscodes = {0:'На базе', 1:'Вылет разрешен', 2:'В полете'}
+    pilotscodes = {0:'Не авторизован', 1:'Авторизован', 2:'В ракете'}
     rocketscodes = {0: 'Готова к вылету', 1:'С пилотом', 2: 'В полете'}
 
 
@@ -143,7 +143,6 @@ class MainWindow(QMainWindow, UiMainWindow):
             rownum += 1
 
     def cm_getpilot(self, pilot_data):
-        # self.m_pilots.removeRows(0, self.m_pilots.rowCount())
 
         for k,v in pilot_data.items():
             item = self.m_pilots.findItems(k, flags=Qt.MatchExactly, column=0)
@@ -159,7 +158,9 @@ class MainWindow(QMainWindow, UiMainWindow):
             self.m_pilots.item(rownum, 2).setData(status, 3)
             self.m_pilots.item(rownum, 2).setData(self.pilotscodes[status], Qt.DisplayRole)
             self.m_pilots.item(rownum, 2).setData(QColor(200 - 15 * status, 200 + 15 * status, 255), Qt.BackgroundColorRole)
-            self.m_pilots.item(rownum, 3).setData(v['balance'], Qt.DisplayRole)
+            info = v['info']
+            balance = info[list(info.keys())[0]]['balance']
+            self.m_pilots.item(rownum, 3).setData(balance, Qt.DisplayRole)
 
     def cm_getraces(self, races_data):
         self.races_data = dict(races_data)
