@@ -75,7 +75,6 @@ class MainWindow(QMainWindow, UiMainWindow):
         if self.wsscore.flAuth:
             self.pb_enter.setText('вход выполнен: ' + self.user)
             self.pb_enter.setStyleSheet("color:rgb(64, 192, 64); font: bold 12px;border: none")
-            self.wsscore.getinfo()
         else:
             self.pb_enter.setText('вход не выполнен')
             self.pb_enter.setStyleSheet("color:rgb(255, 96, 96); font: bold 12px;border: none")
@@ -121,20 +120,7 @@ class MainWindow(QMainWindow, UiMainWindow):
         rw.setupUi()
         rw.exec_()
 
-    def cm_getrockets(self, rockets_data):
-        self.m_rockets.removeRows(0, self.m_rockets.rowCount())
-        rownum = 0
-        for k,v in rockets_data.items():
-            self.m_rockets.appendRow([QStandardItem(), QStandardItem(), QStandardItem()])
-            self.m_rockets.item(rownum, 0).setData(k, Qt.DisplayRole)
-            self.m_rockets.item(rownum, 1).setData(v['version'], Qt.DisplayRole)
-            status = v['status']
-            self.m_rockets.item(rownum, 2).setData(status, 3)
-            self.m_rockets.item(rownum, 2).setData(self.rocketscodes[status], Qt.DisplayRole)
-            self.m_rockets.item(rownum, 2).setData(QColor(200 - 15 * status, 200 + 15 * status, 255), Qt.BackgroundColorRole)
-            rownum += 1
-
-    def cm_getmanagers(self, managers_data):
+    def cm_managersinfo(self, managers_data):
         self.m_managers.removeRows(0, self.m_managers.rowCount())
         rownum = 0
         for manager in managers_data:
@@ -142,8 +128,30 @@ class MainWindow(QMainWindow, UiMainWindow):
             self.m_managers.item(rownum, 0).setData(manager, Qt.DisplayRole)
             rownum += 1
 
-    def cm_getpilot(self, pilot_data):
+    def cm_rocketinfo(self, rocket_data):
+        for k,v in rocket_data.items():
+            item = self.m_rockets.findItems(k, flags=Qt.MatchExactly, column=0)
+            if not item:
+                rownum = self.m_rockets.rowCount()
+                self.m_rockets.appendRow([QStandardItem(), QStandardItem(), QStandardItem(), QStandardItem(), QStandardItem(), QStandardItem(), QStandardItem(), QStandardItem(), QStandardItem()])
+                self.m_rockets.item(rownum, 0).setData(k, Qt.DisplayRole)
+                self.m_rockets.item(rownum, 1).setData(v['version'], Qt.DisplayRole)
+            else:
+                rownum = item[0].row()
 
+            self.m_rockets.item(rownum, 2).setData(v['pilot'], Qt.DisplayRole)
+            status = v['status']
+            self.m_rockets.item(rownum, 3).setData(status, 3)
+            self.m_rockets.item(rownum, 3).setData(self.rocketscodes[status], Qt.DisplayRole)
+            self.m_rockets.item(rownum, 3).setData(QColor(200 - 15 * status, 200 + 15 * status, 255), Qt.BackgroundColorRole)
+            info = v['info']
+            self.m_rockets.item(rownum, 4).setData(info['racetime'], Qt.DisplayRole)
+            self.m_rockets.item(rownum, 5).setData(info['fundingmined'], Qt.DisplayRole)
+            self.m_rockets.item(rownum, 6).setData(info['fundingcount'], Qt.DisplayRole)
+            self.m_rockets.item(rownum, 7).setData(info['contractmined'], Qt.DisplayRole)
+            self.m_rockets.item(rownum, 8).setData(info['contractcount'], Qt.DisplayRole)
+
+    def cm_pilotinfo(self, pilot_data):
         for k,v in pilot_data.items():
             item = self.m_pilots.findItems(k, flags=Qt.MatchExactly, column=0)
             if not item:
@@ -161,18 +169,6 @@ class MainWindow(QMainWindow, UiMainWindow):
             info = v['info']
             balance = info[list(info.keys())[0]]['balance']
             self.m_pilots.item(rownum, 3).setData(balance, Qt.DisplayRole)
-
-    def cm_getraces(self, races_data):
-        self.races_data = dict(races_data)
-        self.m_races.removeRows(0, self.m_races.rowCount())
-        rownum = 0
-        for k,v in self.races_data.items():
-            self.m_races.appendRow([QStandardItem(), QStandardItem(), QStandardItem()])
-            self.m_races.item(rownum, 0).setData(k, Qt.DisplayRole)
-            self.m_races.item(rownum, 1).setData(v['pilot'], Qt.DisplayRole)
-            self.m_races.item(rownum, 2).setData(v['status'], 3)
-            self.m_races.item(rownum, 2).setData(self.racescodes[v['status']], Qt.DisplayRole)
-            rownum += 1
 
 
 app = QApplication([])

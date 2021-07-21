@@ -47,15 +47,15 @@ class WSSCore(Thread):
                 self.pc.change_auth_status()
             elif message_type == 'cm':
                 command = data.get('command')
-                if command == 'getrockets':
-                    rockets_data = data.get('rockets')
-                    self.pc.cm_getrockets(rockets_data)
-                elif command == 'getmanagers':
-                    managers_data = data.get('managers')
-                    self.pc.cm_getmanagers(managers_data)
-                elif command == 'getpilot':
+                if command == 'cm_rocketinfo':
+                    rocket_data = data.get('rockets')
+                    self.pc.cm_rocketinfo(rocket_data)
+                elif command == 'cm_pilotinfo':
                     pilot_data = data.get('pilot')
-                    self.pc.cm_getpilot(pilot_data)
+                    self.pc.cm_pilotinfo(pilot_data)
+                elif command == 'cm_managersinfo':
+                    managers_data = data.get('managers')
+                    self.pc.cm_managersinfo(managers_data)
                 else:
                     pass
             else:
@@ -73,21 +73,11 @@ class WSSCore(Thread):
                 time.sleep(1)
 
     def authpilot(self, name, rocket_id):
-        data = {'command': 'authpilot', 'pilot': name, 'rocket': rocket_id}
-        self.send_mc(data)
-
-    def getinfo(self):
-        data = {'command': 'getrockets'}
-        self.send_mc(data)
-        data = {'command': 'getpilots'}
-        self.send_mc(data)
-        data = {'command': 'getmanagers'}
-        self.send_mc(data)
-        data = {'command': 'getraces'}
+        data = {'command': 'mc_authpilot', 'pilot': name, 'rocket': rocket_id}
         self.send_mc(data)
 
     def setparameters(self):
-        data = {'command': 'setparameters', }
+        data = {'command': 'mc_setparameters', }
 
     def send_registration(self, user, psw):
         str = {'id': 1, 'message_type': 'registration', 'data': {'typereg': 'manager', 'user': user, 'psw': psw}}
