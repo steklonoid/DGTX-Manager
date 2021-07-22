@@ -20,7 +20,7 @@ from threading import Lock
 
 
 class MainWindow(QMainWindow, UiMainWindow):
-    version = '1.0.5'
+    version = '1.0.6'
     settings = QSettings("./config.ini", QSettings.IniFormat)   # файл настроек
     lock = Lock()
 
@@ -150,6 +150,11 @@ class MainWindow(QMainWindow, UiMainWindow):
             self.m_rockets.item(rownum, 6).setData(info['fundingcount'], Qt.DisplayRole)
             self.m_rockets.item(rownum, 7).setData(info['contractmined'], Qt.DisplayRole)
             self.m_rockets.item(rownum, 8).setData(info['contractcount'], Qt.DisplayRole)
+
+    def cm_rocketdelete(self, rocket_id):
+        item = self.m_rockets.findItems(rocket_id, flags=Qt.MatchExactly, column=0)
+        if item:
+            self.m_rockets.removeRow(item[0].row())
 
     def cm_pilotinfo(self, pilot_data):
         for k,v in pilot_data.items():

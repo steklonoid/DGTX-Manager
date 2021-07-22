@@ -48,8 +48,11 @@ class WSSCore(Thread):
             elif message_type == 'cm':
                 command = data.get('command')
                 if command == 'cm_rocketinfo':
-                    rocket_data = data.get('rockets')
+                    rocket_data = data.get('rocket')
                     self.pc.cm_rocketinfo(rocket_data)
+                elif command == 'cm_rocketdelete':
+                    rocket_id = data.get('rocket')
+                    self.pc.cm_rocketdelete(rocket_id)
                 elif command == 'cm_pilotinfo':
                     pilot_data = data.get('pilot')
                     self.pc.cm_pilotinfo(pilot_data)
