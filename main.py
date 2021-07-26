@@ -86,12 +86,12 @@ class MainWindow(QMainWindow, UiMainWindow):
         index = self.t_pilots.selectedIndexes()[0].siblingAtColumn(2)
         status = self.m_pilots.itemData(index)[3]
         #    если пилот свободен
-        if status == 0:
+        if status == 1:
             #   ищем свободную ракету
             flFreeRocket = False
             for i in range(self.m_rockets.rowCount()):
                 rocket_id = self.m_rockets.item(i, 0).data(Qt.DisplayRole)
-                rocket_status = self.m_rockets.item(i, 2).data(3)
+                rocket_status = self.m_rockets.item(i, 3).data(3)
                 if rocket_status == 0:
                     flFreeRocket = True
                     break
@@ -171,8 +171,7 @@ class MainWindow(QMainWindow, UiMainWindow):
             self.m_pilots.item(rownum, 2).setData(status, 3)
             self.m_pilots.item(rownum, 2).setData(self.pilotscodes[status], Qt.DisplayRole)
             self.m_pilots.item(rownum, 2).setData(QColor(200 - 15 * status, 200 + 15 * status, 255), Qt.BackgroundColorRole)
-            info = v['info']
-            balance = info[list(info.keys())[0]]['balance']
+            balance = v['balance']
             self.m_pilots.item(rownum, 3).setData(balance, Qt.DisplayRole)
 
 

@@ -33,9 +33,8 @@ class WSSCore(Thread):
             time.sleep(1)
 
         def on_message(wssapp, message):
-            print(message)
+            # print(message)
             message = json.loads(message)
-            id = message.get('id')
             message_type = message.get('message_type')
             data = message.get('data')
             if message_type == 'registration':
