@@ -37,24 +37,25 @@ class WSSCore(Thread):
             message = json.loads(message)
             message_type = message.get('message_type')
             data = message.get('data')
-            if message_type == 'registration':
-                status = data.get('status')
-                if status == 'ok':
-                    self.flAuth = True
-                else:
-                    self.flAuth = False
-                self.pc.change_auth_status()
-            elif message_type == 'cm':
+            if message_type == 'cm':
                 command = data.get('command')
-                if command == 'cm_rocketinfo':
-                    rocket_data = data.get('rocket')
-                    self.pc.cm_rocketinfo(rocket_data)
+                if command == 'cm_registration':
+                    status = data.get('status')
+                    if status == 'ok':
+                        self.flAuth = True
+                    else:
+                        self.flAuth = False
+                    self.pc.change_auth_status()
+                elif command == 'cm_rocketinfo':
+                    rocket_id = data.get('rocket')
+                    self.pc.cm_rocketinfo(rocket_id)
                 elif command == 'cm_rocketdelete':
                     rocket_id = data.get('rocket')
                     self.pc.cm_rocketdelete(rocket_id)
                 elif command == 'cm_pilotinfo':
-                    pilot_data = data.get('pilot')
-                    self.pc.cm_pilotinfo(pilot_data)
+                    pilot = data.get('pilot')
+                    info = data.get('info')
+                    self.pc.cm_pilotinfo(pilot, info)
                 elif command == 'cm_managersinfo':
                     managers_data = data.get('managers')
                     self.pc.cm_managersinfo(managers_data)
@@ -74,20 +75,20 @@ class WSSCore(Thread):
             finally:
                 time.sleep(1)
 
-    def authpilot(self, name, rocket_id):
+    def mc_authpilot(self, name, rocket_id):
         data = {'command': 'mc_authpilot', 'pilot': name, 'rocket': rocket_id}
         self.send_mc(data)
 
-    def setparameters(self):
-        data = {'command': 'mc_setparameters', }
+    def mc_setparameters(self):
+        data = {'command': 'mc_setparameters'}
+        self.send_mc(data)
 
-    def send_registration(self, user, psw):
-        str = {'id': 1, 'message_type': 'registration', 'data': {'typereg': 'manager', 'user': user, 'psw': psw}}
-        str = json.dumps(str)
-        self.wsapp.send(str)
+    def mc_registration(self, user, psw):
+        data = {'command': 'mc_registration', 'user': user, 'psw': psw}
+        self.send_mc(data)
 
     def send_mc(self, data):
-        str = {'id':10, 'message_type':'mc', 'data':data}
+        str = {'message_type':'mc', 'data':data}
         str = json.dumps(str)
         self.wsapp.send(str)
 

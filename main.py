@@ -69,7 +69,7 @@ class MainWindow(QMainWindow, UiMainWindow):
     def userlogined(self, user, psw):
         if self.wsscore.flConnect and not self.wsscore.flAuth:
             self.user = user
-            self.wsscore.send_registration(user, psw)
+            self.wsscore.mc_registration(user, psw)
 
     def change_auth_status(self):
         if self.wsscore.flAuth:
@@ -96,7 +96,7 @@ class MainWindow(QMainWindow, UiMainWindow):
                     flFreeRocket = True
                     break
             if flFreeRocket:
-                self.wsscore.authpilot(name, rocket_id)
+                self.wsscore.mc_authpilot(name, rocket_id)
             else:
                 print('Нет свободных ракет')
 
@@ -152,27 +152,26 @@ class MainWindow(QMainWindow, UiMainWindow):
             self.m_rockets.item(rownum, 8).setData(info['contractcount'], Qt.DisplayRole)
 
     def cm_rocketdelete(self, rocket_id):
-        item = self.m_rockets.findItems(rocket_id, flags=Qt.MatchExactly, column=0)
+        item = self.m_rockets.findItems(str(rocket_id), flags=Qt.MatchExactly, column=0)
         if item:
             self.m_rockets.removeRow(item[0].row())
 
-    def cm_pilotinfo(self, pilot_data):
-        for k,v in pilot_data.items():
-            item = self.m_pilots.findItems(k, flags=Qt.MatchExactly, column=0)
-            if not item:
-                rownum = self.m_pilots.rowCount()
-                self.m_pilots.appendRow([QStandardItem(), QStandardItem(), QStandardItem(), QStandardItem()])
-                self.m_pilots.item(rownum, 0).setData(k, Qt.DisplayRole)
-                self.m_pilots.item(rownum, 1).setData(v['name'], Qt.DisplayRole)
-            else:
-                rownum = item[0].row()
+    def cm_pilotinfo(self, pilot, pilot_info):
+        item = self.m_pilots.findItems(pilot, flags=Qt.MatchExactly, column=0)
+        if not item:
+            rownum = self.m_pilots.rowCount()
+            self.m_pilots.appendRow([QStandardItem(), QStandardItem(), QStandardItem(), QStandardItem()])
+            self.m_pilots.item(rownum, 0).setData(pilot, Qt.DisplayRole)
+            self.m_pilots.item(rownum, 1).setData(pilot_info['name'], Qt.DisplayRole)
+        else:
+            rownum = item[0].row()
 
-            status = v['status']
-            self.m_pilots.item(rownum, 2).setData(status, 3)
-            self.m_pilots.item(rownum, 2).setData(self.pilotscodes[status], Qt.DisplayRole)
-            self.m_pilots.item(rownum, 2).setData(QColor(200 - 15 * status, 200 + 15 * status, 255), Qt.BackgroundColorRole)
-            balance = v['balance']
-            self.m_pilots.item(rownum, 3).setData(balance, Qt.DisplayRole)
+        status = pilot_info['status']
+        self.m_pilots.item(rownum, 2).setData(status, 3)
+        self.m_pilots.item(rownum, 2).setData(self.pilotscodes[status], Qt.DisplayRole)
+        self.m_pilots.item(rownum, 2).setData(QColor(200 - 15 * status, 200 + 15 * status, 255), Qt.BackgroundColorRole)
+        balance = pilot_info['balance']
+        self.m_pilots.item(rownum, 3).setData(balance, Qt.DisplayRole)
 
 
 app = QApplication([])
