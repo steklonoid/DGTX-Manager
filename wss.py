@@ -2,15 +2,16 @@ from threading import Thread
 import websocket
 import json
 import time
+from PyQt5.QtCore import QThread
 
 
 class WSSCore(Thread):
-    def __init__(self, pc):
+    def __init__(self, pc, q):
         super(WSSCore, self).__init__()
         self.flClosing = False
         self.pc = pc
+        self.q = q
         self.flConnect = False
-        self.flAuth = False
 
     def run(self) -> None:
         def on_open(wsapp):
@@ -21,15 +22,11 @@ class WSSCore(Thread):
         def on_close(wsapp, close_status_code, close_msg):
             print('close')
             self.flConnect = False
-            self.flAuth = False
-            self.pc.change_auth_status()
 
         def on_error(wsapp, error):
             print('error')
             self.pc.statusbar.showMessage('Ошибка соединения с сервером')
             self.flConnect = False
-            self.flAuth = False
-            self.pc.change_auth_status()
             time.sleep(1)
 
         def on_message(wssapp, message):
@@ -38,29 +35,7 @@ class WSSCore(Thread):
             message_type = message.get('message_type')
             data = message.get('data')
             if message_type == 'cm':
-                command = data.get('command')
-                if command == 'cm_registration':
-                    status = data.get('status')
-                    if status == 'ok':
-                        self.flAuth = True
-                    else:
-                        self.flAuth = False
-                    self.pc.change_auth_status()
-                elif command == 'cm_rocketinfo':
-                    rocket_id = data.get('rocket')
-                    self.pc.cm_rocketinfo(rocket_id)
-                elif command == 'cm_rocketdelete':
-                    rocket_id = data.get('rocket')
-                    self.pc.cm_rocketdelete(rocket_id)
-                elif command == 'cm_pilotinfo':
-                    pilot = data.get('pilot')
-                    info = data.get('info')
-                    self.pc.cm_pilotinfo(pilot, info)
-                elif command == 'cm_managersinfo':
-                    managers_data = data.get('managers')
-                    self.pc.cm_managersinfo(managers_data)
-                else:
-                    pass
+                self.q.put(data)
             else:
                 pass
 
@@ -94,11 +69,13 @@ class WSSCore(Thread):
 
 
 class Worker(Thread):
-    def __init__(self, f, data):
+    def __init__(self, f, q):
         super(Worker, self).__init__()
         self.f = f
-        self.data = data
+        self.q = q
 
     def run(self) -> None:
         while True:
-            self.f(self.data)
+            data = self.q.get()
+            self.f(data)
+
