@@ -2,8 +2,8 @@ import sys
 import queue
 import logging
 
-from PyQt5.QtWidgets import QMainWindow, QApplication
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QColor
+from PyQt5.QtWidgets import QMainWindow, QApplication, QMenu
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QColor, QCursor
 from PyQt5.QtCore import QSettings, pyqtSlot, Qt
 from mainWindow import UiMainWindow
 from loginWindow import LoginWindow
@@ -21,6 +21,9 @@ class MainWindow(QMainWindow, UiMainWindow):
     rocketscodes = {0: 'Готова к вылету', 1:'С пилотом', 2: 'В полете'}
 
     flAuth = False
+
+    rockets_parameters = {}
+    current_rocket_id = None
 
     def __init__(self):
 
@@ -127,7 +130,33 @@ class MainWindow(QMainWindow, UiMainWindow):
 
     @pyqtSlot()
     def t_rockets_clicked(self):
-        pass
+        index = self.t_rockets.selectedIndexes()[0].siblingAtColumn(0)
+        self.current_rocket_id = self.m_rockets.itemData(index)[Qt.DisplayRole]
+        parameters = self.rockets_parameters[self.current_rocket_id]
+        print(parameters)
+        self.m_param.removeRows(0, self.m_param.rowCount())
+        rownum = 0
+        for k,v in parameters.items():
+            self.m_param.appendRow([QStandardItem(), QStandardItem()])
+            self.m_param.item(rownum, 0).setData(k, Qt.DisplayRole)
+            self.m_param.item(rownum, 1).setData(v, Qt.DisplayRole)
+            rownum += 1
+
+    @pyqtSlot()
+    def t_parameters_temapates_customContextMenuRequested(self):
+        menu = QMenu()
+        menu.addAction(self.tr("Добавить в избранное")).triggered.connect(lambda: self.customContextMenuTriggered(1))
+        menu.addAction(self.tr("Удалить из избранного")).triggered.connect(lambda: self.customContextMenuTriggered(2))
+
+        menu1 = QMenu(self.tr("Выгрузить для Deductor"))
+        menu1.addAction(self.tr("Бары")).triggered.connect(lambda: self.customContextMenuTriggered(31))
+        menu1.addAction(self.tr("Фракталы")).triggered.connect(lambda: self.customContextMenuTriggered(32))
+        menu1.addAction(self.tr("Фрактальные коэф.")).triggered.connect(lambda: self.customContextMenuTriggered(33))
+        menu.addMenu(menu1)
+
+        menu.addAction(self.tr("Выгрузить для Forex MT5")).triggered.connect(lambda: self.customContextMenuTriggered(4))
+        menu.addAction(self.tr("Выгрузить для Нейросети")).triggered.connect(lambda: self.customContextMenuTriggered(5))
+        menu.exec_(QCursor.pos())
 
     @pyqtSlot()
     def buttonLogin_clicked(self):
@@ -167,6 +196,8 @@ class MainWindow(QMainWindow, UiMainWindow):
                 self.m_rockets.item(rownum, 6).setData(info['fundingcount'], Qt.DisplayRole)
                 self.m_rockets.item(rownum, 7).setData(info['contractmined'], Qt.DisplayRole)
                 self.m_rockets.item(rownum, 8).setData(info['contractcount'], Qt.DisplayRole)
+            parameters = v['parameters']
+            self.rockets_parameters[k] = parameters
 
             i1 = self.m_rockets.item(rownum, 2).index()
             i2 = self.m_rockets.item(rownum, 8).index()
