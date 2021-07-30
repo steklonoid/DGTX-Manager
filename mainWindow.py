@@ -30,9 +30,9 @@ class UiMainWindow(object):
         l_managers = MyLabel('Менеждеры')
         l_managers.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         self.gridLayout.addWidget(l_managers, 0, 0, 1, 1)
-        self.lt_managers = QListView()
-        self.lt_managers.setMaximumWidth(100)
-        self.gridLayout.addWidget(self.lt_managers, 1, 0, 4, 1)
+        self.lv_managers = QListView()
+        self.lv_managers.setMaximumWidth(100)
+        self.gridLayout.addWidget(self.lv_managers, 1, 0, 4, 1)
 
         l_pilots = MyLabel('Пилоты')
         l_pilots.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
@@ -54,7 +54,6 @@ class UiMainWindow(object):
         l_parameters_temapates.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         self.gridLayout.addWidget(l_parameters_temapates, 0, 8, 1, 2)
         self.t_parameters_temapates = QTableView()
-        self.t_parameters_temapates.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.t_parameters_temapates.setContextMenuPolicy(Qt.CustomContextMenu)
         self.t_parameters_temapates.customContextMenuRequested.connect(self.t_parameters_temapates_customContextMenuRequested)
         self.gridLayout.addWidget(self.t_parameters_temapates, 1, 8, 4, 2)
@@ -78,8 +77,8 @@ class UiMainWindow(object):
         l_param = MyLabel('Параметры')
         l_param.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         self.gridLayout.addWidget(l_param, 5, 8, 1, 2)
-        self.t_param = QTableView()
-        self.gridLayout.addWidget(self.t_param, 6, 8, 4, 2)
+        self.t_parameters = QTableView()
+        self.gridLayout.addWidget(self.t_parameters, 6, 8, 4, 2)
 
 
 
