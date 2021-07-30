@@ -54,8 +54,8 @@ class WSSCore(Thread):
         data = {'command': 'mc_authpilot', 'pilot': name, 'rocket': rocket_id}
         self.send_mc(data)
 
-    def mc_setparameters(self):
-        data = {'command': 'mc_setparameters'}
+    def mc_setparameters(self, rocket_id, parameters):
+        data = {'command': 'mc_setparameters', 'rocket':rocket_id, 'parameters':parameters}
         self.send_mc(data)
 
     def mc_registration(self, user, psw):
