@@ -171,7 +171,7 @@ class MainWindow(QMainWindow, UiMainWindow):
                 self.m_rockets.item(self.last_rocket_row, column).setFont(QFont("Helvetica", 10, QFont.Normal))
 
         for column in range(0, self.m_rockets.columnCount()):
-            self.m_rockets.item(self.current_rocket_row, column).setFont(QFont("Helvetica", 12, QFont.Bold))
+            self.m_rockets.item(self.current_rocket_row, column).setFont(QFont("Helvetica", 10, QFont.Bold))
 
     @pyqtSlot()
     def t_pilots_doubleClicked(self):
@@ -190,6 +190,7 @@ class MainWindow(QMainWindow, UiMainWindow):
                     break
             if rocket_id != 0:
                 self.current_rocket_id = rocket_id
+                self.last_rocket_row = self.current_rocket_row
                 self.current_rocket_row = i
                 self.showrocketparameters()
                 self.wsscore.mc_authpilot(name, rocket_id)
@@ -200,6 +201,7 @@ class MainWindow(QMainWindow, UiMainWindow):
     def t_rockets_clicked(self):
         index = self.t_rockets.selectedIndexes()[0].siblingAtColumn(0)
         self.current_rocket_id = self.m_rockets.item(index.row(), 0).data(Qt.DisplayRole)
+        self.last_rocket_row = self.current_rocket_row
         self.current_rocket_row = index.row()
         self.showrocketparameters()
 
@@ -288,8 +290,9 @@ class MainWindow(QMainWindow, UiMainWindow):
                 self.rockets_parameters[k] = parameters
             if self.current_rocket_id == 0:
                 self.current_rocket_id = k
+                self.last_rocket_row = self.current_rocket_row
                 self.current_rocket_row = rownum
-            self.showrocketparameters()
+                self.showrocketparameters()
 
             i1 = self.m_rockets.item(rownum, 2).index()
             i2 = self.m_rockets.item(rownum, 8).index()
@@ -311,10 +314,12 @@ class MainWindow(QMainWindow, UiMainWindow):
             rownum = self.m_pilots.rowCount()
             self.m_pilots.appendRow([QStandardItem(), QStandardItem(), QStandardItem(), QStandardItem()])
             self.m_pilots.item(rownum, 0).setData(pilot, Qt.DisplayRole)
-            self.m_pilots.item(rownum, 1).setData(pilot_info['name'], Qt.DisplayRole)
         else:
             rownum = item[0].row()
 
+        name = pilot_info.get('name')
+        if name:
+            self.m_pilots.item(rownum, 1).setData(name, Qt.DisplayRole)
         status = pilot_info.get('status')
         if status:
             self.m_pilots.item(rownum, 2).setData(status, 3)
