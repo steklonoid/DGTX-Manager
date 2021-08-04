@@ -292,7 +292,7 @@ class MainWindow(QMainWindow, UiMainWindow):
                 self.current_rocket_id = k
                 self.last_rocket_row = self.current_rocket_row
                 self.current_rocket_row = rownum
-                self.showrocketparameters()
+            self.showrocketparameters()
 
             i1 = self.m_rockets.item(rownum, 2).index()
             i2 = self.m_rockets.item(rownum, 8).index()
