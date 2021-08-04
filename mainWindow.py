@@ -34,29 +34,26 @@ class UiMainWindow(object):
         self.lv_managers.setMaximumWidth(100)
         self.gridLayout.addWidget(self.lv_managers, 1, 0, 4, 1)
 
-        l_pilots = MyLabel('Пилоты')
-        l_pilots.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        self.gridLayout.addWidget(l_pilots, 0, 1, 1, 3)
-        self.t_pilots = QTableView()
-        self.t_pilots.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.t_pilots.doubleClicked.connect(self.t_pilots_doubleClicked)
-        self.t_pilots.setUpdatesEnabled(True)
-        self.gridLayout.addWidget(self.t_pilots, 1, 1, 4, 3)
-
         l_marketinfo = MyLabel('Рыночная инфа')
         l_marketinfo.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        self.gridLayout.addWidget(l_marketinfo, 0, 4, 1, 4)
+        self.gridLayout.addWidget(l_marketinfo, 0, 1, 1, 3)
         self.t_marketinfo = QTableView()
         self.t_marketinfo.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.gridLayout.addWidget(self.t_marketinfo, 1, 4, 4, 4)
+        self.gridLayout.addWidget(self.t_marketinfo, 1, 1, 4, 3)
 
         l_parameters_temapates = MyLabel('Шаблоны параметров')
         l_parameters_temapates.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        self.gridLayout.addWidget(l_parameters_temapates, 0, 8, 1, 2)
+        self.gridLayout.addWidget(l_parameters_temapates, 0, 4, 1, 4)
         self.t_parameters_temapates = QTableView()
         self.t_parameters_temapates.setContextMenuPolicy(Qt.CustomContextMenu)
         self.t_parameters_temapates.customContextMenuRequested.connect(self.t_parameters_temapates_customContextMenuRequested)
-        self.gridLayout.addWidget(self.t_parameters_temapates, 1, 8, 4, 2)
+        self.gridLayout.addWidget(self.t_parameters_temapates, 1, 4, 4, 4)
+
+        l_param = MyLabel('Параметры')
+        l_param.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        self.gridLayout.addWidget(l_param, 0, 8, 1, 2)
+        self.t_parameters = QTableView()
+        self.gridLayout.addWidget(self.t_parameters, 1, 8, 4, 2)
 
         self.pb_enter = QPushButton()
         self.pb_enter.setText('вход не выполнен')
@@ -72,15 +69,7 @@ class UiMainWindow(object):
         self.t_rockets.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.t_rockets.setUpdatesEnabled(True)
         self.t_rockets.clicked.connect(self.t_rockets_clicked)
-        self.gridLayout.addWidget(self.t_rockets, 6, 0, 4, 8)
-
-        l_param = MyLabel('Параметры')
-        l_param.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        self.gridLayout.addWidget(l_param, 5, 8, 1, 2)
-        self.t_parameters = QTableView()
-        self.gridLayout.addWidget(self.t_parameters, 6, 8, 4, 2)
-
-
+        self.gridLayout.addWidget(self.t_rockets, 6, 0, 4, 10)
 
         self.statusbar = QStatusBar(mainwindow)
         self.statusbar.setObjectName("statusbar")

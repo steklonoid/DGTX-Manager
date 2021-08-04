@@ -30,7 +30,7 @@ class WSSCore(Thread):
             time.sleep(1)
 
         def on_message(wssapp, message):
-            # print(message)
+            print(message)
             message = json.loads(message)
             message_type = message.get('message_type')
             data = message.get('data')
@@ -42,7 +42,7 @@ class WSSCore(Thread):
         while not self.flClosing:
             try:
                 self.pc.statusbar.showMessage('Устанавливаем соединение с сервером')
-                self.wsapp = websocket.WebSocketApp("ws://185.59.100.235:16789", on_open=on_open,
+                self.wsapp = websocket.WebSocketApp("ws://localhost:16789", on_open=on_open,
                                                                on_close=on_close, on_error=on_error, on_message=on_message)
                 self.wsapp.run_forever()
             except:
