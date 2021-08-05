@@ -114,7 +114,6 @@ class MainWindow(QMainWindow, UiMainWindow):
             self.m_parameters_temapates.item(rownum, 1).setData(v, Qt.DisplayRole)
             rownum += 1
 
-
     def change_auth_status(self):
         if self.flAuth:
             self.pb_enter.setText('вход выполнен: ' + self.user)
@@ -132,20 +131,14 @@ class MainWindow(QMainWindow, UiMainWindow):
             else:
                 self.flAuth = False
             self.change_auth_status()
-        elif command == 'cm_rocketinfo':
-            rocket = data.get('rocket')
-            self.cm_rocketinfo(rocket)
-        elif command == 'cm_rocketdelete':
-            rocket_id = data.get('rocket')
-            self.cm_rocketdelete(rocket_id)
         elif command == 'cm_pilotinfo':
             pilot = data.get('pilot')
             name = data.get('name')
-            status = data.get('status')
-            balance = data.get('balance')
+            rocket = data.get('rocket')
+            authstatus = data.get('authstatus')
             info = data.get('info')
             parameters = data.get('parameters')
-            self.cm_pilotinfo(pilot, name, status, balance, info, parameters)
+            self.cm_pilotinfo(pilot, name, rocket, authstatus, info, parameters)
         elif command == 'cm_managersinfo':
             managers_data = data.get('managers')
             self.cm_managersinfo(managers_data)
@@ -175,36 +168,12 @@ class MainWindow(QMainWindow, UiMainWindow):
         # for column in range(0, self.m_rockets.columnCount()):
         #     self.m_rockets.item(self.current_rocket_row, column).setFont(QFont("Helvetica", 10, QFont.Bold))
 
-    # @pyqtSlot()
-    # def t_pilots_doubleClicked(self):
-    #     index = self.t_pilots.selectedIndexes()[0].siblingAtColumn(0)
-    #     name = self.m_pilots.itemData(index)[Qt.DisplayRole]
-    #     index = self.t_pilots.selectedIndexes()[0].siblingAtColumn(2)
-    #     status = self.m_pilots.itemData(index)[3]
-    #     #    если пилот свободен
-    #     if status == 1:
-    #         #   ищем свободную ракету
-    #         rocket_id = 0
-    #         for i in range(self.m_rockets.rowCount()):
-    #             rocket_status = self.m_rockets.item(i, 3).data(3)
-    #             if rocket_status == 0:
-    #                 rocket_id = self.m_rockets.item(i, 0).data(Qt.DisplayRole)
-    #                 break
-    #         if rocket_id != 0:
-    #             self.current_rocket_id = rocket_id
-    #             self.last_rocket_row = self.current_rocket_row
-    #             self.current_rocket_row = i
-    #             self.showrocketparameters()
-    #             self.wsscore.mc_authpilot(name, rocket_id)
-    #         else:
-    #             print('Нет свободных ракет')
-
     @pyqtSlot()
     def t_rockets_clicked(self):
         index = self.t_rockets.selectedIndexes()[0].siblingAtColumn(0)
-        self.last_rocket_row = self.current_rocket_row
-        self.current_rocket_row = index.row()
-        self.showrocketparameters()
+        # self.last_rocket_row = self.current_rocket_row
+        # self.current_rocket_row = index.row()
+        # self.showrocketparameters()
 
     @pyqtSlot()
     def t_parameters_temapates_customContextMenuRequested(self):
@@ -261,17 +230,7 @@ class MainWindow(QMainWindow, UiMainWindow):
             self.m_managers.item(rownum, 0).setData(manager, Qt.DisplayRole)
             rownum += 1
 
-    def cm_rocketdelete(self, rocket_id):
-        item = self.m_rockets.findItems(rocket_id, flags=Qt.MatchExactly, column=0)
-        if item:
-            self.m_rockets.removeRow(item[0].row())
-            if self.m_rockets.rowCount() > 0:
-                self.showrocketparameters()
-            else:
-                self.current_rocket_id = 0
-                self.m_parameters.removeRows(0, self.m_parameters.rowCount())
-
-    def cm_pilotinfo(self, pilot, name, status, balance, info, parameters):
+    def cm_pilotinfo(self, pilot, name, rocket, authstatus, info, parameters):
         item = self.m_rockets.findItems(pilot, flags=Qt.MatchExactly, column=0)
         if not item:
             rownum = self.m_rockets.rowCount()
@@ -281,14 +240,16 @@ class MainWindow(QMainWindow, UiMainWindow):
         else:
             rownum = item[0].row()
 
-        if status:
-            self.m_rockets.item(rownum, 1).setData(status, 3)
-            self.m_rockets.item(rownum, 1).setData(self.pilotscodes[status], Qt.DisplayRole)
-            self.m_rockets.item(rownum, 1).setData(QColor(200 - 15 * status, 200 + 15 * status, 255), Qt.BackgroundColorRole)
+        if rocket:
+            self.m_rockets.item(rownum, 1).setData(rocket, 3)
+            self.m_rockets.item(rownum, 1).setData(self.pilotscodes[rocket], Qt.DisplayRole)
+            self.m_rockets.item(rownum, 1).setData(QColor(200 - 15 * rocket, 200 + 15 * rocket, 255), Qt.BackgroundColorRole)
+        if authstatus:
+            self.m_rockets.item(rownum, 2).setData(authstatus, 3)
+            self.m_rockets.item(rownum, 2).setData(self.pilotscodes[authstatus], Qt.DisplayRole)
+            self.m_rockets.item(rownum, 2).setData(QColor(200 - 15 * authstatus, 200 + 15 * authstatus, 255), Qt.BackgroundColorRole)
         if name:
             self.m_rockets.item(rownum, 3).setData(name, Qt.DisplayRole)
-        if balance:
-            self.m_rockets.item(rownum, 4).setData(balance, Qt.DisplayRole)
         if info:
             self.m_rockets.item(rownum, 4).setData(info['balance'], Qt.DisplayRole)
             racetime = str(datetime.timedelta(seconds=round(info['racetime'])))
@@ -303,6 +264,7 @@ class MainWindow(QMainWindow, UiMainWindow):
             for i in range(5):
                 strparameters += ' ' + str(parameters['dist' + str(i + 1)])
             self.m_rockets.item(rownum, 5).setData(strparameters, Qt.DisplayRole)
+
         i1 = self.m_rockets.item(rownum, 2).index()
         i2 = self.m_rockets.item(rownum, 3).index()
         self.t_rockets.dataChanged(i1, i2)

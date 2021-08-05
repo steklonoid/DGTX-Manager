@@ -50,10 +50,6 @@ class WSSCore(Thread):
             finally:
                 time.sleep(1)
 
-    def mc_authpilot(self, name, rocket_id):
-        data = {'command': 'mc_authpilot', 'pilot': name, 'rocket': rocket_id}
-        self.send_mc(data)
-
     def mc_setparameters(self, rocket_id, parameters):
         data = {'command': 'mc_setparameters', 'rocket':rocket_id, 'parameters':parameters}
         self.send_mc(data)
