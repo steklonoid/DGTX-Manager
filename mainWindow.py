@@ -62,9 +62,11 @@ class UiMainWindow(object):
         self.gridLayout.addWidget(self.pb_enter, 5, 0, 1, 1)
         self.pb_enter.clicked.connect(self.buttonLogin_clicked)
 
-        l_rockets = MyLabel('Ракеты')
-        l_rockets.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        self.gridLayout.addWidget(l_rockets, 5, 1, 1, 7)
+        self.l_serveraddress = QLabel(mainwindow.serveraddress)
+        self.gridLayout.addWidget(self.l_serveraddress, 5, 1, 1, 1)
+        self.l_serverport = QLabel(mainwindow.serverport)
+        self.gridLayout.addWidget(self.l_serverport, 5, 2, 1, 1)
+
         self.t_rockets = QTableView()
         self.t_rockets.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.t_rockets.setUpdatesEnabled(True)

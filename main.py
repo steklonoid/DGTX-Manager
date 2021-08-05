@@ -8,19 +8,22 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem, QColor, QCursor, QFon
 from PyQt5.QtCore import QSettings, pyqtSlot, Qt
 from mainWindow import UiMainWindow
 from loginWindow import LoginWindow
-from wss import Worker, WSSCore
+from wssclient import WSSClient, FromQToF
 from threading import Lock
 import json
 
 
 class MainWindow(QMainWindow, UiMainWindow):
-    version = '1.0.7'
-    settings = QSettings("./config.ini", QSettings.IniFormat)   # файл настроек
+
+    settings = QSettings("./config.ini", QSettings.IniFormat)
+    serveraddress = settings.value('serveraddress')
+    serverport = settings.value('serverport')
+
+    version = '1.2.1'
     lock = Lock()
 
     flConnect = False           #   флаг нормального соединения с сайтом
-    pilotscodes = {0:'Не авторизован', 1:'Авторизован', 2:'В ракете'}
-    rocketscodes = {0: 'Готова к вылету', 1:'С пилотом', 2: 'В полете'}
+    pilotscodes = {0:'Отдыхает', 1:'Готов к вылету', 2:'Неверны ключ'}
 
     flAuth = False
 
@@ -29,21 +32,7 @@ class MainWindow(QMainWindow, UiMainWindow):
     current_row = None
     last_row = None
 
-    parameters = {'symbol': '',
-                  'numconts': 0,
-                  'dist1': 0,
-                  'dist2': 0,
-                  'dist3': 0,
-                  'dist4': 0,
-                  'dist5': 0,
-                  'dist1_k': 0.0,
-                  'dist2_k': 0.0,
-                  'dist3_k': 0.0,
-                  'dist4_k': 0.0,
-                  'dist5_k': 0.0,
-                  'delayaftermined': 0,
-                  'bandelay': 0.0,
-                  'flRace': False}
+    parameters = {}
 
     def __init__(self):
 
@@ -85,15 +74,24 @@ class MainWindow(QMainWindow, UiMainWindow):
         self.m_parameters.setHorizontalHeaderLabels(['Параметр', 'Значение'])
         self.t_parameters.setModel(self.m_parameters)
 
-        q = queue.Queue()
+        #   ------------------------------------------------------------------------
 
-        self.wsscore = WSSCore(self, q)
+        corereceiveq = queue.Queue()
+        serveraddress = 'ws://' + self.serveraddress + ':' + self.serverport
+        self.wsscore = WSSClient(corereceiveq, serveraddress)
         self.wsscore.daemon = True
         self.wsscore.start()
 
-        self.worker = Worker(self.updatetv, q)
-        self.worker.daemon = True
-        self.worker.start()
+        self.corereceiver = FromQToF(self.receivemessagefromcore, corereceiveq)
+        self.corereceiver.daemon = True
+        self.corereceiver.start()
+
+        self.coresendq = queue.Queue()
+        self.coresender = FromQToF(self.wsscore.send, self.coresendq)
+        self.coresender.daemon = True
+        self.coresender.start()
+
+        #   ------------------------------------------------------------------------
 
         self.user = ''
 
@@ -103,7 +101,8 @@ class MainWindow(QMainWindow, UiMainWindow):
     def userlogined(self, user, psw):
         if self.wsscore.flConnect and not self.flAuth:
             self.user = user
-            self.wsscore.mc_registration(user, psw)
+            data = {'command':'mc_registration', 'user':user, 'psw':psw}
+            self.coresendq.put(data)
 
     def fillparameterstemplate(self, parameters):
         self.m_parameters_temapates.removeRows(0, self.m_parameters_temapates.rowCount())
@@ -114,7 +113,6 @@ class MainWindow(QMainWindow, UiMainWindow):
             self.m_parameters_temapates.item(rownum, 1).setData(v, Qt.DisplayRole)
             rownum += 1
 
-
     def change_auth_status(self):
         if self.flAuth:
             self.pb_enter.setText('вход выполнен: ' + self.user)
@@ -123,7 +121,7 @@ class MainWindow(QMainWindow, UiMainWindow):
             self.pb_enter.setText('вход не выполнен')
             self.pb_enter.setStyleSheet("color:rgb(255, 96, 96); font: bold 12px;border: none")
 
-    def updatetv(self, data):
+    def receivemessagefromcore(self, data):
         command = data.get('command')
         if command == 'cm_registration':
             status = data.get('status')
@@ -132,20 +130,13 @@ class MainWindow(QMainWindow, UiMainWindow):
             else:
                 self.flAuth = False
             self.change_auth_status()
-        elif command == 'cm_rocketinfo':
-            rocket = data.get('rocket')
-            self.cm_rocketinfo(rocket)
-        elif command == 'cm_rocketdelete':
-            rocket_id = data.get('rocket')
-            self.cm_rocketdelete(rocket_id)
         elif command == 'cm_pilotinfo':
             pilot = data.get('pilot')
             name = data.get('name')
-            status = data.get('status')
-            balance = data.get('balance')
+            authstate = data.get('authstate')
             info = data.get('info')
             parameters = data.get('parameters')
-            self.cm_pilotinfo(pilot, name, status, balance, info, parameters)
+            self.cm_pilotinfo(pilot, name, authstate, info, parameters)
         elif command == 'cm_managersinfo':
             managers_data = data.get('managers')
             self.cm_managersinfo(managers_data)
@@ -175,36 +166,12 @@ class MainWindow(QMainWindow, UiMainWindow):
         # for column in range(0, self.m_rockets.columnCount()):
         #     self.m_rockets.item(self.current_rocket_row, column).setFont(QFont("Helvetica", 10, QFont.Bold))
 
-    # @pyqtSlot()
-    # def t_pilots_doubleClicked(self):
-    #     index = self.t_pilots.selectedIndexes()[0].siblingAtColumn(0)
-    #     name = self.m_pilots.itemData(index)[Qt.DisplayRole]
-    #     index = self.t_pilots.selectedIndexes()[0].siblingAtColumn(2)
-    #     status = self.m_pilots.itemData(index)[3]
-    #     #    если пилот свободен
-    #     if status == 1:
-    #         #   ищем свободную ракету
-    #         rocket_id = 0
-    #         for i in range(self.m_rockets.rowCount()):
-    #             rocket_status = self.m_rockets.item(i, 3).data(3)
-    #             if rocket_status == 0:
-    #                 rocket_id = self.m_rockets.item(i, 0).data(Qt.DisplayRole)
-    #                 break
-    #         if rocket_id != 0:
-    #             self.current_rocket_id = rocket_id
-    #             self.last_rocket_row = self.current_rocket_row
-    #             self.current_rocket_row = i
-    #             self.showrocketparameters()
-    #             self.wsscore.mc_authpilot(name, rocket_id)
-    #         else:
-    #             print('Нет свободных ракет')
-
     @pyqtSlot()
     def t_rockets_clicked(self):
         index = self.t_rockets.selectedIndexes()[0].siblingAtColumn(0)
-        self.last_rocket_row = self.current_rocket_row
-        self.current_rocket_row = index.row()
-        self.showrocketparameters()
+        # self.last_rocket_row = self.current_rocket_row
+        # self.current_rocket_row = index.row()
+        # self.showrocketparameters()
 
     @pyqtSlot()
     def t_parameters_temapates_customContextMenuRequested(self):
@@ -261,17 +228,7 @@ class MainWindow(QMainWindow, UiMainWindow):
             self.m_managers.item(rownum, 0).setData(manager, Qt.DisplayRole)
             rownum += 1
 
-    def cm_rocketdelete(self, rocket_id):
-        item = self.m_rockets.findItems(rocket_id, flags=Qt.MatchExactly, column=0)
-        if item:
-            self.m_rockets.removeRow(item[0].row())
-            if self.m_rockets.rowCount() > 0:
-                self.showrocketparameters()
-            else:
-                self.current_rocket_id = 0
-                self.m_parameters.removeRows(0, self.m_parameters.rowCount())
-
-    def cm_pilotinfo(self, pilot, name, status, balance, info, parameters):
+    def cm_pilotinfo(self, pilot, name, authstate, info, parameters):
         item = self.m_rockets.findItems(pilot, flags=Qt.MatchExactly, column=0)
         if not item:
             rownum = self.m_rockets.rowCount()
@@ -280,15 +237,12 @@ class MainWindow(QMainWindow, UiMainWindow):
             self.m_rockets.item(rownum, 0).setData(pilot, Qt.DisplayRole)
         else:
             rownum = item[0].row()
-
-        if status:
-            self.m_rockets.item(rownum, 1).setData(status, 3)
-            self.m_rockets.item(rownum, 1).setData(self.pilotscodes[status], Qt.DisplayRole)
-            self.m_rockets.item(rownum, 1).setData(QColor(200 - 15 * status, 200 + 15 * status, 255), Qt.BackgroundColorRole)
+        if authstate:
+            self.m_rockets.item(rownum, 2).setData(authstate, 3)
+            self.m_rockets.item(rownum, 2).setData(self.pilotscodes[authstate], Qt.DisplayRole)
+            self.m_rockets.item(rownum, 2).setData(QColor(200 - 15 * authstate, 200 + 15 * authstate, 255), Qt.BackgroundColorRole)
         if name:
             self.m_rockets.item(rownum, 3).setData(name, Qt.DisplayRole)
-        if balance:
-            self.m_rockets.item(rownum, 4).setData(balance, Qt.DisplayRole)
         if info:
             self.m_rockets.item(rownum, 4).setData(info['balance'], Qt.DisplayRole)
             racetime = str(datetime.timedelta(seconds=round(info['racetime'])))
@@ -303,6 +257,7 @@ class MainWindow(QMainWindow, UiMainWindow):
             for i in range(5):
                 strparameters += ' ' + str(parameters['dist' + str(i + 1)])
             self.m_rockets.item(rownum, 5).setData(strparameters, Qt.DisplayRole)
+
         i1 = self.m_rockets.item(rownum, 2).index()
         i2 = self.m_rockets.item(rownum, 3).index()
         self.t_rockets.dataChanged(i1, i2)
