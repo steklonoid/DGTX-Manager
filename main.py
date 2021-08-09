@@ -19,18 +19,18 @@ class MainWindow(QMainWindow, UiMainWindow):
     serveraddress = settings.value('serveraddress')
     serverport = settings.value('serverport')
 
-    version = '1.2.1'
+    version = '1.3.1'
     lock = Lock()
 
     flConnect = False           #   флаг нормального соединения с сайтом
-    pilotscodes = {0:'Отдыхает', 1:'Готов к вылету', 2:'Неверны ключ'}
+    pilotscodes = {0:'Не в ракете', 1:'В ракете', 2:'Неверный ключ'}
 
     flAuth = False
 
     pilots_parameters = {}
     current_pilot = None
-    current_row = None
-    last_row = None
+    current_rocket_row = None
+    last_rocket_row = None
 
     parameters = {}
 
@@ -116,10 +116,8 @@ class MainWindow(QMainWindow, UiMainWindow):
     def change_auth_status(self):
         if self.flAuth:
             self.pb_enter.setText('вход выполнен: ' + self.user)
-            self.pb_enter.setStyleSheet("color:rgb(64, 192, 64); font: bold 12px;border: none")
         else:
             self.pb_enter.setText('вход не выполнен')
-            self.pb_enter.setStyleSheet("color:rgb(255, 96, 96); font: bold 12px;border: none")
 
     def receivemessagefromcore(self, data):
         command = data.get('command')
@@ -133,10 +131,10 @@ class MainWindow(QMainWindow, UiMainWindow):
         elif command == 'cm_pilotinfo':
             pilot = data.get('pilot')
             name = data.get('name')
-            authstate = data.get('authstate')
+            state = data.get('state')
             info = data.get('info')
             parameters = data.get('parameters')
-            self.cm_pilotinfo(pilot, name, authstate, info, parameters)
+            self.cm_pilotinfo(pilot, name, state, info, parameters)
         elif command == 'cm_managersinfo':
             managers_data = data.get('managers')
             self.cm_managersinfo(managers_data)
@@ -144,34 +142,41 @@ class MainWindow(QMainWindow, UiMainWindow):
             pass
 
     def showrocketparameters(self):
+        self.m_parameters.removeRows(0, self.m_parameters.rowCount())
         parameters = self.pilots_parameters.get(self.current_pilot)
-        # if parameters:
-        #     self.m_parameters.removeRows(0, self.m_parameters.rowCount())
-        #     rownum = 0
-        #     for k, v in parameters.items():
-        #         self.m_parameters.appendRow([QStandardItem(), QStandardItem()])
-        #         self.m_parameters.item(rownum, 0).setData(k, Qt.DisplayRole)
-        #         self.m_parameters.item(rownum, 1).setData(v, Qt.DisplayRole)
-        #         rownum += 1
-        #
-        # if self.m_parameters.rowCount() > 0:
-        #     i1 = self.m_parameters.item(0, 0).index()
-        #     i2 = self.m_parameters.item(self.m_parameters.rowCount() - 1, 1).index()
-        #     self.t_parameters.dataChanged(i1, i2)
-        #
+        if parameters:
+            rownum = 0
+            for k, v in parameters.items():
+                self.m_parameters.appendRow([QStandardItem(), QStandardItem()])
+                self.m_parameters.item(rownum, 0).setData(k, Qt.DisplayRole)
+                self.m_parameters.item(rownum, 1).setData(v, Qt.DisplayRole)
+                rownum += 1
+
+        if self.m_parameters.rowCount() > 0:
+            i1 = self.m_parameters.item(0, 0).index()
+            i2 = self.m_parameters.item(self.m_parameters.rowCount() - 1, 1).index()
+            self.t_parameters.dataChanged(i1, i2)
+
+        # print(self.last_rocket_row, self.current_rocket_row)
+        # normalFont = QFont()
+        # normalFont.setPointSize(10)
         # if self.last_rocket_row:
         #     for column in range(0, self.m_rockets.columnCount()):
-        #         self.m_rockets.item(self.last_rocket_row, column).setFont(QFont("Helvetica", 10, QFont.Normal))
-        #
-        # for column in range(0, self.m_rockets.columnCount()):
-        #     self.m_rockets.item(self.current_rocket_row, column).setFont(QFont("Helvetica", 10, QFont.Bold))
+        #         self.m_rockets.set
+        #         self.m_rockets.item(self.last_rocket_row, column).setFont(normalFont)
+        # choiceFont = QFont()
+        # choiceFont.setPointSize(12)
+        # if self.current_rocket_row:
+        #     for column in range(0, self.m_rockets.columnCount()):
+        #         self.m_rockets.item(self.current_rocket_row, column).setFont(choiceFont)
 
     @pyqtSlot()
     def t_rockets_clicked(self):
         index = self.t_rockets.selectedIndexes()[0].siblingAtColumn(0)
-        # self.last_rocket_row = self.current_rocket_row
-        # self.current_rocket_row = index.row()
-        # self.showrocketparameters()
+        self.last_rocket_row = self.current_rocket_row
+        self.current_rocket_row = index.row()
+        self.current_pilot = self.m_rockets.data(index, Qt.DisplayRole)
+        self.showrocketparameters()
 
     @pyqtSlot()
     def t_parameters_temapates_customContextMenuRequested(self):
@@ -204,7 +209,8 @@ class MainWindow(QMainWindow, UiMainWindow):
                 for rownum in range(0, self.m_parameters_temapates.rowCount()):
                     parameters[self.m_parameters_temapates.item(rownum, 0).data(
                         Qt.DisplayRole)] = self.m_parameters_temapates.item(rownum, 1).data(Qt.DisplayRole)
-                self.wsscore.mc_setparameters(self.current_rocket_id, parameters)
+                data = {'command': 'mc_setparameters', 'pilot': self.current_pilot, 'parameters': parameters}
+                self.coresendq.put(data)
 
         menu = QMenu()
         menu.addAction(self.tr("Загрузить шаблон")).triggered.connect(lambda: customContextMenuTriggered(1))
@@ -228,7 +234,7 @@ class MainWindow(QMainWindow, UiMainWindow):
             self.m_managers.item(rownum, 0).setData(manager, Qt.DisplayRole)
             rownum += 1
 
-    def cm_pilotinfo(self, pilot, name, authstate, info, parameters):
+    def cm_pilotinfo(self, pilot, name, state, info, parameters):
         item = self.m_rockets.findItems(pilot, flags=Qt.MatchExactly, column=0)
         if not item:
             rownum = self.m_rockets.rowCount()
@@ -237,12 +243,14 @@ class MainWindow(QMainWindow, UiMainWindow):
             self.m_rockets.item(rownum, 0).setData(pilot, Qt.DisplayRole)
         else:
             rownum = item[0].row()
-        if authstate:
-            self.m_rockets.item(rownum, 2).setData(authstate, 3)
-            self.m_rockets.item(rownum, 2).setData(self.pilotscodes[authstate], Qt.DisplayRole)
-            self.m_rockets.item(rownum, 2).setData(QColor(200 - 15 * authstate, 200 + 15 * authstate, 255), Qt.BackgroundColorRole)
-        if name:
-            self.m_rockets.item(rownum, 3).setData(name, Qt.DisplayRole)
+
+
+        self.m_rockets.item(rownum, 1).setData(state, 3)
+        self.m_rockets.item(rownum, 1).setData(self.pilotscodes[state], Qt.DisplayRole)
+        self.m_rockets.item(rownum, 1).setData(QColor(200 - 15 * state, 200 + 15 * state, 255), Qt.BackgroundColorRole)
+
+        self.m_rockets.item(rownum, 3).setData(name, Qt.DisplayRole)
+
         if info:
             self.m_rockets.item(rownum, 4).setData(info['balance'], Qt.DisplayRole)
             racetime = str(datetime.timedelta(seconds=round(info['racetime'])))
@@ -258,8 +266,8 @@ class MainWindow(QMainWindow, UiMainWindow):
                 strparameters += ' ' + str(parameters['dist' + str(i + 1)])
             self.m_rockets.item(rownum, 5).setData(strparameters, Qt.DisplayRole)
 
-        i1 = self.m_rockets.item(rownum, 2).index()
-        i2 = self.m_rockets.item(rownum, 3).index()
+        i1 = self.m_rockets.item(rownum, 0).index()
+        i2 = self.m_rockets.item(rownum, 10).index()
         self.t_rockets.dataChanged(i1, i2)
 
 
