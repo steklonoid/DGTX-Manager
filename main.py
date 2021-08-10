@@ -138,6 +138,9 @@ class MainWindow(QMainWindow, UiMainWindow):
         elif command == 'cm_managersinfo':
             managers_data = data.get('managers')
             self.cm_managersinfo(managers_data)
+        elif command == 'cm_marketinfo':
+            info = data.get('info')
+            self.cm_marketinfo(info)
         else:
             pass
 
@@ -226,6 +229,22 @@ class MainWindow(QMainWindow, UiMainWindow):
         rw.setupUi()
         rw.exec_()
 
+    def cm_marketinfo(self, info):
+        print(info)
+        # self.m_marketinfo.removeRows(0, self.m_marketinfo.rowCount())
+        # if info:
+        #     rownum = 0
+        #     for k, v in info.items():
+        #         self.m_parameters.appendRow([QStandardItem(), QStandardItem()])
+        #         self.m_parameters.item(rownum, 0).setData(k, Qt.DisplayRole)
+        #         self.m_parameters.item(rownum, 1).setData(v, Qt.DisplayRole)
+        #         rownum += 1
+        #
+        # if self.m_parameters.rowCount() > 0:
+        #     i1 = self.m_parameters.item(0, 0).index()
+        #     i2 = self.m_parameters.item(self.m_parameters.rowCount() - 1, 1).index()
+        #     self.t_parameters.dataChanged(i1, i2)
+
     def cm_managersinfo(self, managers_data):
         self.m_managers.removeRows(0, self.m_managers.rowCount())
         rownum = 0
@@ -262,8 +281,8 @@ class MainWindow(QMainWindow, UiMainWindow):
         if parameters:
             self.pilots_parameters[pilot] = parameters
             strparameters = parameters['symbol'][0:3]
-            for i in range(5):
-                strparameters += ' ' + str(parameters['dist' + str(i + 1)])
+            # for i in range(5):
+            #     strparameters += ' ' + str(parameters['dist' + str(i + 1)])
             self.m_rockets.item(rownum, 5).setData(strparameters, Qt.DisplayRole)
 
         i1 = self.m_rockets.item(rownum, 0).index()
