@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QDialog, QSizePolicy, QVBoxLayout, QLabel, QLineEdit, QDialogButtonBox, QMessageBox
 from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt
-from PyQt5.QtGui import QIcon, QFont
+from PyQt5.QtGui import QFont
 
 
 class LoginWindow(QDialog):

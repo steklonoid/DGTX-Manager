@@ -9,17 +9,20 @@ class WSSClient(Thread):
         super(WSSClient, self).__init__()
         self.q = q
         self.address = address
-        self.flConnect = False
         self.flClosing = False
 
     def run(self) -> None:
         def on_open(wsapp):
-            self.flConnect = True
             data = {'command':'on_open'}
             self.q.put(data)
 
         def on_close(wsapp, close_status_code, close_msg):
-            self.flConnect = False
+            data = {'command': 'on_close'}
+            self.q.put(data)
+
+        def on_error(wsapp, error):
+            data = {'command': 'on_error', 'ch': 'on_error'}
+            self.q.put(data)
 
         def on_message(wssapp, message):
             data = json.loads(message)
@@ -27,7 +30,7 @@ class WSSClient(Thread):
 
         while not self.flClosing:
             try:
-                self.wsapp = websocket.WebSocketApp(self.address, on_open=on_open,
+                self.wsapp = websocket.WebSocketApp(self.address, on_open=on_open, on_error=on_error,
                                                                on_close=on_close, on_message=on_message)
                 self.wsapp.run_forever()
             except:
@@ -36,8 +39,11 @@ class WSSClient(Thread):
                 time.sleep(1)
 
     def send(self, data):
-        str = json.dumps(data)
-        self.wsapp.send(str)
+        try:
+            str = json.dumps(data)
+            self.wsapp.send(str)
+        except:
+            pass
 
 
 class FromQToF(Thread):

@@ -4,7 +4,7 @@ import logging
 import datetime
 
 from PyQt5.QtWidgets import QMainWindow, QApplication, QMenu, QFileDialog
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QColor, QCursor, QFont
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QColor, QCursor
 from PyQt5.QtCore import QSettings, pyqtSlot, Qt
 from mainWindow import UiMainWindow
 from loginWindow import LoginWindow
@@ -19,12 +19,12 @@ class MainWindow(QMainWindow, UiMainWindow):
     serveraddress = settings.value('serveraddress')
     serverport = settings.value('serverport')
 
-    version = '1.3.1'
+    version = '1.3.4'
     lock = Lock()
 
-    flConnect = False           #   флаг нормального соединения с сайтом
+    flCoreConnect = False           #   флаг нормального соединения с сайтом
     pilotscodes = {0:'Не в ракете', 1:'В ракете', 2:'Неверный ключ'}
-
+    racecodes = {0:'Пауза', 1:'Полет'}
     flAuth = False
 
     pilots_parameters = {}
@@ -99,7 +99,7 @@ class MainWindow(QMainWindow, UiMainWindow):
         pass
 
     def userlogined(self, user, psw):
-        if self.wsscore.flConnect and not self.flAuth:
+        if self.flCoreConnect and not self.flAuth:
             self.user = user
             data = {'command':'mc_registration', 'user':user, 'psw':psw}
             self.coresendq.put(data)
@@ -121,7 +121,16 @@ class MainWindow(QMainWindow, UiMainWindow):
 
     def receivemessagefromcore(self, data):
         command = data.get('command')
-        if command == 'cm_registration':
+        if command == 'on_open':
+            self.flCoreConnect = True
+            self.l_core.setText('Соединение с ядром установлено')
+        elif command == 'on_close':
+            self.flCoreConnect = False
+            self.l_core.setText('Устанавливаем соединение с ядром')
+        elif command == 'on_error':
+            self.flCoreConnect = False
+            self.l_core.setText('Ошибка соединения с ядром')
+        elif command == 'cm_registration':
             status = data.get('status')
             if status == 'ok':
                 self.flAuth = True
@@ -230,7 +239,7 @@ class MainWindow(QMainWindow, UiMainWindow):
         rw.exec_()
 
     def cm_marketinfo(self, info):
-        print(info)
+        pass
         # self.m_marketinfo.removeRows(0, self.m_marketinfo.rowCount())
         # if info:
         #     rownum = 0
@@ -279,6 +288,14 @@ class MainWindow(QMainWindow, UiMainWindow):
             self.m_rockets.item(rownum, 9).setData(info['contractmined'], Qt.DisplayRole)
             self.m_rockets.item(rownum, 10).setData(info['contractcount'], Qt.DisplayRole)
         if parameters:
+            if parameters['flRace']:
+                flRace = 1
+            else:
+                flRace = 0
+            self.m_rockets.item(rownum, 2).setData(flRace, 3)
+            self.m_rockets.item(rownum, 2).setData(self.racecodes[flRace], Qt.DisplayRole)
+            self.m_rockets.item(rownum, 2).setData(QColor(255 - 128 * flRace, 127 + 128 * flRace, 128), Qt.BackgroundColorRole)
+
             self.pilots_parameters[pilot] = parameters
             strparameters = parameters['symbol'][0:3]
             # for i in range(5):

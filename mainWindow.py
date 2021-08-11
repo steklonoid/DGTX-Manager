@@ -1,7 +1,6 @@
 # модуль главного окна
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QGridLayout, QStatusBar, QPushButton, QLabel, QTableView, QHBoxLayout, QAbstractItemView, QListView
-from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QWidget, QGridLayout, QStatusBar, QPushButton, QLabel, QTableView, QAbstractItemView, QListView
 
 class MyLabel(QLabel):
     def __init__(self, text=None):
@@ -53,11 +52,11 @@ class UiMainWindow(object):
         l_param.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         self.gridLayout.addWidget(l_param, 0, 8, 1, 2)
         self.t_parameters = QTableView()
+        self.t_parameters.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.gridLayout.addWidget(self.t_parameters, 1, 8, 4, 2)
 
         self.pb_enter = QPushButton()
         self.pb_enter.setText('вход не выполнен')
-        # self.pb_enter.setStyleSheet("color:rgb(255, 96, 96); font: bold 12px;border: none")
         self.pb_enter.setCursor(Qt.PointingHandCursor)
         self.gridLayout.addWidget(self.pb_enter, 5, 0, 1, 1)
         self.pb_enter.clicked.connect(self.buttonLogin_clicked)
@@ -66,6 +65,9 @@ class UiMainWindow(object):
         self.gridLayout.addWidget(self.l_serveraddress, 5, 1, 1, 1)
         self.l_serverport = QLabel(mainwindow.serverport)
         self.gridLayout.addWidget(self.l_serverport, 5, 2, 1, 1)
+        self.l_core = QLabel('Нет соединения с ядром')
+        self.l_core.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        self.gridLayout.addWidget(self.l_core, 5, 3, 1, 1)
 
         self.t_rockets = QTableView()
         self.t_rockets.setEditTriggers(QAbstractItemView.NoEditTriggers)
