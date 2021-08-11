@@ -1,0 +1,1 @@
+{"symbol": "BTCUSD-PERP", "exDist": 5, "numconts": 1, "maxorderdist": 5, "dist1_k": 0.2, "dist2_k": 0.4, "dist3_k": 0.5, "dist4_k": 0.6, "dist5_k": 0.7, "delayaftermined": 10, "bandelay": 1.0, "flRace": true}
