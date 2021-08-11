@@ -334,14 +334,20 @@ class MainWindow(QMainWindow, UiMainWindow):
             self.m_rockets.item(rownum, 8).setData(info['fundingcount'], Qt.DisplayRole)
             self.m_rockets.item(rownum, 9).setData(info['contractmined'], Qt.DisplayRole)
             self.m_rockets.item(rownum, 10).setData(info['contractcount'], Qt.DisplayRole)
+
         if parameters:
-            if parameters['flRace']:
-                flRace = 1
+            if state == 0:
+                self.m_rockets.item(rownum, 2).setData(None, 3)
+                self.m_rockets.item(rownum, 2).setData(None, Qt.DisplayRole)
+                self.m_rockets.item(rownum, 2).setData(QColor(255, 255, 255), Qt.BackgroundColorRole)
             else:
-                flRace = 0
-            self.m_rockets.item(rownum, 2).setData(flRace, 3)
-            self.m_rockets.item(rownum, 2).setData(self.racecodes[flRace], Qt.DisplayRole)
-            self.m_rockets.item(rownum, 2).setData(QColor(255 - 128 * flRace, 127 + 128 * flRace, 128), Qt.BackgroundColorRole)
+                if parameters['flRace']:
+                    flRace = 1
+                else:
+                    flRace = 0
+                self.m_rockets.item(rownum, 2).setData(flRace, 3)
+                self.m_rockets.item(rownum, 2).setData(self.racecodes[flRace], Qt.DisplayRole)
+                self.m_rockets.item(rownum, 2).setData(QColor(255 - 128 * flRace, 127 + 128 * flRace, 128), Qt.BackgroundColorRole)
 
             self.pilots_parameters[pilot] = parameters
             strparameters = parameters['symbol'][0:3]
