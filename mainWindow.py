@@ -1,6 +1,7 @@
 # модуль главного окна
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QGridLayout, QStatusBar, QPushButton, QLabel, QTableView, QAbstractItemView, QListView
+from PyQt5.QtGui import QFont
 
 class MyLabel(QLabel):
     def __init__(self, text=None):
@@ -68,10 +69,14 @@ class UiMainWindow(object):
         self.l_core = QLabel('Нет соединения с ядром')
         self.l_core.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         self.gridLayout.addWidget(self.l_core, 5, 3, 1, 1)
+        self.l_pilot = QLabel()
+        self.l_pilot.setFont(QFont("Helvetica", 12, QFont.Bold))
+        self.gridLayout.addWidget(self.l_pilot, 5, 6, 1, 1)
 
         self.t_rockets = QTableView()
         self.t_rockets.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.t_rockets.setUpdatesEnabled(True)
+        self.t_rockets.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.t_rockets.customContextMenuRequested.connect(self.t_rockets_customContextMenuRequested)
         self.t_rockets.clicked.connect(self.t_rockets_clicked)
         self.gridLayout.addWidget(self.t_rockets, 6, 0, 4, 10)
 

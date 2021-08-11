@@ -19,7 +19,7 @@ class MainWindow(QMainWindow, UiMainWindow):
     serveraddress = settings.value('serveraddress')
     serverport = settings.value('serverport')
 
-    version = '1.3.4'
+    version = '1.3.5'
     lock = Lock()
 
     flCoreConnect = False           #   флаг нормального соединения с сайтом
@@ -45,10 +45,6 @@ class MainWindow(QMainWindow, UiMainWindow):
 
         self.m_managers = QStandardItemModel()
         self.lv_managers.setModel(self.m_managers)
-
-        self.m_pilots = QStandardItemModel()
-        self.m_pilots.setColumnCount(4)
-        self.m_pilots.setHorizontalHeaderLabels(['ID', 'Имя', 'Статус', 'Баланс'])
 
         self.m_rockets = QStandardItemModel()
         self.m_rockets.setColumnCount(11)
@@ -188,6 +184,7 @@ class MainWindow(QMainWindow, UiMainWindow):
         self.last_rocket_row = self.current_rocket_row
         self.current_rocket_row = index.row()
         self.current_pilot = self.m_rockets.data(index, Qt.DisplayRole)
+        self.l_pilot.setText(self.current_pilot)
         self.showrocketparameters()
 
     @pyqtSlot()
@@ -230,6 +227,56 @@ class MainWindow(QMainWindow, UiMainWindow):
         menu.addAction(self.tr("Из параметров")).triggered.connect(lambda: customContextMenuTriggered(3))
         menu.addAction(self.tr("Применить шаблон")).triggered.connect(lambda: customContextMenuTriggered(4))
         menu.exec_(QCursor.pos())
+
+    @pyqtSlot()
+    def t_rockets_customContextMenuRequested(self):
+
+        def customContextMenuTriggered(itemNumber, ):
+            if itemNumber == 1:
+                if self.m_parameters_temapates.rowCount() > 0:
+                    parameters = {}
+                    for rownum in range(0, self.m_parameters_temapates.rowCount()):
+                        parameters[self.m_parameters_temapates.item(rownum, 0).data(
+                            Qt.DisplayRole)] = self.m_parameters_temapates.item(rownum, 1).data(Qt.DisplayRole)
+                    parameters['flRace'] = True
+                    for pilot in pilots:
+                        data = {'command': 'mc_setparameters', 'pilot': pilot, 'parameters': parameters}
+                        self.coresendq.put(data)
+
+            elif itemNumber == 2:
+                if self.m_parameters_temapates.rowCount() > 0:
+                    parameters = {}
+                    for rownum in range(0, self.m_parameters_temapates.rowCount()):
+                        parameters[self.m_parameters_temapates.item(rownum, 0).data(
+                            Qt.DisplayRole)] = self.m_parameters_temapates.item(rownum, 1).data(Qt.DisplayRole)
+                    for pilot in pilots:
+                        data = {'command': 'mc_setparameters', 'pilot': pilot, 'parameters': parameters}
+                        self.coresendq.put(data)
+
+            elif itemNumber == 3:
+                for pilot in pilots:
+                    parameters = self.pilots_parameters[pilot]
+                    parameters['flRace'] = False
+                    data = {'command': 'mc_setparameters', 'pilot': pilot, 'parameters': parameters}
+                    self.coresendq.put(data)
+
+            elif itemNumber == 4:
+                for pilot in pilots:
+                    parameters = self.pilots_parameters[pilot]
+                    parameters['flRace'] = True
+                    data = {'command': 'mc_setparameters', 'pilot': pilot, 'parameters': parameters}
+                    self.coresendq.put(data)
+
+        indexes = self.t_rockets.selectedIndexes()
+        pilots = [self.m_rockets.item(v.row(), 0).data(Qt.DisplayRole) for v in indexes]
+
+        menu = QMenu()
+        menu.addAction(self.tr("Старт")).triggered.connect(lambda: customContextMenuTriggered(4))
+        menu.addAction(self.tr("Старт с текущим шаблоном")).triggered.connect(lambda: customContextMenuTriggered(1))
+        menu.addAction(self.tr("Применить шаблон")).triggered.connect(lambda: customContextMenuTriggered(2))
+        menu.addAction(self.tr("Стоп")).triggered.connect(lambda: customContextMenuTriggered(3))
+        menu.exec_(QCursor.pos())
+
 
     @pyqtSlot()
     def buttonLogin_clicked(self):
