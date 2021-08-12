@@ -351,8 +351,6 @@ class MainWindow(QMainWindow, UiMainWindow):
 
             self.pilots_parameters[pilot] = parameters
             strparameters = parameters['symbol'][0:3]
-            # for i in range(5):
-            #     strparameters += ' ' + str(parameters['dist' + str(i + 1)])
             self.m_rockets.item(rownum, 5).setData(strparameters, Qt.DisplayRole)
 
         i1 = self.m_rockets.item(rownum, 0).index()
